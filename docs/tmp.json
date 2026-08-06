@@ -1,0 +1,19 @@
+{
+    "data": {
+        "equipment": [
+            {
+                "metric":{
+                    "recording": {
+                        "bucketedRecording": [
+                            {
+                                "chanel": "1",
+                                "value": 10,
+                                "timestamp": "2024-06-01:12:00"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
