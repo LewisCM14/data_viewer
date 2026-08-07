@@ -1,0 +1,22 @@
+{
+  "files": {
+    "includes": [
+      "src/**",
+      "test/**",
+      "vitest.config.ts",
+      "tsconfig.json",
+      "package.json",
+      "biome.json",
+      "!!**/coverage",
+      "!!**/dist",
+      "!!**/node_modules"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "rules": {}
+  }
+}

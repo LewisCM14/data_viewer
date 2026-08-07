@@ -130,6 +130,17 @@ isolate: true,
 
 ---
 
+## Documentation Requirements
+
+To keep the codebase maintainable and to support automatic API documentation generation, follow these rules:
+
+- **JSDoc for exports**: Every exported function, class, React component, hook and Zustand slice MUST include a JSDoc comment block describing purpose, parameters, and return values where applicable.
+- **TDD + docs**: During the red → green → refactor cycle add or update JSDoc as part of the implementation step so documentation stays in sync with behaviour.
+- **Generation**: Add `TypeDoc` as a dev dependency and provide a `npm run docs:generate` script (Stage 2/3) to produce HTML API docs from the JSDoc comments.
+- **CI enforcement**: Add a CI job that runs `typedoc` (or a custom script) and fails on generation errors; additionally include a lint check (Biome or custom) to flag exported symbols without JSDoc.
+
+These lightweight practices ensure documentation remains part of the development workflow rather than an afterthought.
+
 ## Stage 0 — Walking Skeleton
 
 **Goal**: A runnable, testable app where every architectural layer exists as a minimal stub wired together end-to-end. No real logic. Proves the full stack compiles, renders, and can be tested.

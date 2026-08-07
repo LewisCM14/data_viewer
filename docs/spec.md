@@ -500,3 +500,25 @@ Biome.js replaces ESLint. Configuration committed at `biome.json`. Enforced rule
 ### Formatting
 
 Biome.js formatter (Prettier-compatible defaults: 4-space indent, double quotes, trailing commas). Enforced via a `biome ci` step in the CI pipeline and optionally as a pre-commit hook.
+
+## Documentation
+
+It is required that all exported modules, functions, classes, React components, hooks, and Zustand slices include JSDoc-style docstrings. This ensures the code is self-documenting and enables automatic API doc generation.
+
+- **Docstring policy**: Add a short description, param and return annotations when applicable, and usage examples for non-trivial APIs. Keep comments concise and focused on behaviour and contracts (not implementation details).
+- **Where**: every `export` in `src/` (functions, consts that are API surfaces, classes, React components and hooks).
+- **Style**: use JSDoc blocks (/** ... */) and TypeScript types in the signature. Example:
+
+```ts
+/**
+ * Fetches bucketed timeseries for the currently selected filters.
+ *
+ * @returns {{ data: BucketedRecording[] | null, loading: boolean }}
+ */
+export default function useGetGraphData() { /* ... */ }
+```
+
+- **Generation**: we recommend using `TypeDoc` to generate HTML/JSON API docs from JSDoc comments. Add a CI job to run `typedoc` and fail the build if errors are encountered.
+- **Enforcement**: include documentation checks as part of code review and optionally add a lint rule or Biome custom check that flags exported symbols without JSDoc.
+
+Adding JSDoc as a best practice helps keep the codebase maintainable and supports onboarding, API generation, and the project's long-term health.
