@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, test, expect, vi } from "vitest";
 import type { Mock } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import useGetGraphData from "./useGetGraphData";
 
 vi.mock("../api/mock/MockTelemetryRepository", () => ({

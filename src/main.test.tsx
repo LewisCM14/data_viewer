@@ -1,5 +1,5 @@
-import { describe, test, expect, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { describe, expect, test, vi } from "vitest";
 
 const useGetGraphDataMock = vi.fn();
 vi.mock("./hooks/useGetGraphData", () => ({ default: useGetGraphDataMock }));

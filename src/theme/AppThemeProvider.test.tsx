@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
 import { useTheme } from "@mui/material/styles";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { AppThemeProvider } from "./AppThemeProvider";
-import { test, expect } from "vitest";
 
 function ThemedChild() {
   const theme = useTheme();

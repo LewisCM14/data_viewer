@@ -1,6 +1,6 @@
 import type React from "react";
-import Plot from "../atoms/Plot";
 import useGetGraphData from "../../hooks/useGetGraphData";
+import Plot from "../atoms/Plot";
 
 /**
  * PlotContainer

@@ -1,8 +1,9 @@
 import { render } from "@testing-library/react";
-import { describe, test, expect, vi } from "vitest";
 import type { Mock } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 vi.mock("../../hooks/useGetGraphData", () => ({ default: vi.fn() }));
+
 import useGetGraphData from "../../hooks/useGetGraphData";
 import PlotContainer from "./PlotContainer";
 

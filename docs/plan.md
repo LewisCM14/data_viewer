@@ -170,7 +170,7 @@ These lightweight practices ensure documentation remains part of the development
 
 > Write each test, watch it fail, implement, watch it pass, then move to the next.
 
-1. `AppThemeProvider.test.tsx` — renders children without throwing; children can read theme via `useTheme`
+1. `AppThemeProvider.test.tsx` — **Completed** — renders children without throwing; children can read theme via `useTheme`
 2. `store/slices/filterSlice.test.ts` — initial state has the expected shape (`equipmentId: null`, `digitalChannels: []`, `analogueChannels: []`, `dateRange: null`, `sampleRate: 1`, `channelColours: {}`)
 3. `store/slices/notificationSlice.test.ts` — initial state `{ message: "", severity: "info", open: false }`
 4. `store/slices/uiSlice.test.ts` — initial state `{ favourites: [], isSidebarOpen: true }`

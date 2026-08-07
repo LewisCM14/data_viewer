@@ -1,7 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import useFilterSlice, {
-  initialFilterState,
   type FilterState,
+  initialFilterState,
 } from "./filterSlice";
 
 describe("filterSlice initial state", () => {
@@ -23,5 +23,12 @@ describe("filterSlice initial state", () => {
     expect(s.getState()).toEqual(initialFilterState);
     s.setState({ equipmentId: "eq1" });
     expect(s.getState().equipmentId).toBe("eq1");
+  });
+
+  test("setEquipment helper updates equipmentId", () => {
+    const s = useFilterSlice();
+    expect(s.getState().equipmentId).toBeNull();
+    s.setEquipment("eq2");
+    expect(s.getState().equipmentId).toBe("eq2");
   });
 });

@@ -1,7 +1,7 @@
 import type React from "react";
 import AppThemeProvider from "../../theme/AppThemeProvider";
-import PageLayout from "../templates/PageLayout";
 import PlotContainer from "../molecules/PlotContainer";
+import PageLayout from "../templates/PageLayout";
 
 /**
  * DataViewerPage

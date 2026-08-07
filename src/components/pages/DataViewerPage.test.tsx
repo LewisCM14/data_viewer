@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { describe, test, expect, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 vi.mock("../../hooks/useGetGraphData", () => ({
   default: () => ({ data: [{ id: 1 }], loading: false }),

@@ -41,5 +41,15 @@ export default function useFilterSlice() {
     state = { ...state, ...partial };
   }
 
-  return { getState, setState, initialFilterState };
+  /**
+   * setEquipment
+   *
+   * Update the currently selected equipment identifier in the filter slice.
+   * Use `null` to clear the selection.
+   */
+  function setEquipment(equipmentId: string | null) {
+    setState({ equipmentId });
+  }
+
+  return { getState, setState, setEquipment, initialFilterState };
 }
