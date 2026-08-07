@@ -29,5 +29,9 @@ export default function useUISlice() {
     state = { ...state, isSidebarOpen: !state.isSidebarOpen };
   }
 
-  return { getState, toggleSidebar, initialUIState };
+  return {
+    getState,
+    toggleSidebar,
+    initialUIState,
+  };
 }

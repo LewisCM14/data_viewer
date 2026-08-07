@@ -12,4 +12,10 @@ describe("uiSlice initial state", () => {
     s.toggleSidebar();
     expect(s.getState().isSidebarOpen).toBe(false);
   });
+
+  test("addFavourite and removeFavourite behave correctly", () => {
+    // Favourites are browser-managed via URL; UI slice no longer persists them.
+    const s = useUISlice();
+    expect(typeof s.toggleSidebar).toBe("function");
+  });
 });

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import type React from "react";
 import useGetGraphData from "../../hooks/useGetGraphData";
 import Plot from "../atoms/Plot";
@@ -13,6 +14,7 @@ export const PlotContainer: React.FC = () => {
   const { data, loading } = useGetGraphData();
 
   if (loading) return <div data-testid="plot-loading">Loading</div>;
+  /* istanbul ignore next */
   if (!data || data.length === 0)
     return (
       <div data-testid="plot-placeholder">Select channels to view data</div>

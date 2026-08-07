@@ -201,10 +201,10 @@ These lightweight practices ensure documentation remains part of the development
 
 - `filterSlice` actions: `setEquipment`, `addDigitalChannel`, `removeDigitalChannel`, `addAnalogueChannel`, `removeAnalogueChannel`, `setDateRange`, `setSampleRate`, `setChannelColour`, `resetFilters`
 - `notificationSlice` actions: `showNotification({ message, severity })`, `dismissNotification`
-- `uiSlice` actions: `toggleSidebar`, `addFavourite(snapshot: FilterSnapshot)`, `removeFavourite(index: number)`
+ - `uiSlice` actions: `toggleSidebar` (favourites are URL-managed; no `addFavourite`/`removeFavourite` in the store)
 - `useFilters` hook: typed selector/dispatch wrapper over `filterSlice`
 - `urlSyncMiddleware` — on every `filterSlice` change, serialises state to `URLSearchParams` via `window.history.replaceState`; on store init, reads current URL and hydrates `filterSlice`
-- `persistMiddleware` — persists `uiSlice.favourites` to `localStorage["dv-favourites"]`; reads on init
+ - `persistMiddleware` — persists permitted UI state to localStorage if required; **does not** persist favourites (favourites are represented via bookmarked URLs)
 - `usePersistentState` hook: reads current `filterSlice` from store and returns a URL-safe string; accepts a URL string and dispatches hydration
 
 ### TDD Order
@@ -220,20 +220,18 @@ These lightweight practices ensure documentation remains part of the development
 9. `notificationSlice.test.ts` — `showNotification` sets `message`, `severity`, `open: true`
 10. `notificationSlice.test.ts` — `dismissNotification` sets `open: false`
 11. `uiSlice.test.ts` — `toggleSidebar` flips `isSidebarOpen`
-12. `uiSlice.test.ts` — `addFavourite` appends a `FilterSnapshot`; `removeFavourite(0)` removes it
 13. `hooks/useFilters.test.ts` — hook exposes slice state and actions with correct types
 14. `store/middleware/urlSyncMiddleware.test.ts` — after `setEquipment(5)`, `window.location.search` contains `equipmentId=5`
 15. `store/middleware/urlSyncMiddleware.test.ts` — initialising the store with `?equipmentId=5` in the URL sets `filterSlice.equipmentId` to `5`
 16. `store/middleware/urlSyncMiddleware.test.ts` — full round-trip: serialise → parse → all fields match original
-17. `store/middleware/persistMiddleware.test.ts` — after `addFavourite`, `localStorage["dv-favourites"]` contains the snapshot
-18. `store/middleware/persistMiddleware.test.ts` — creating a fresh store with pre-populated `localStorage` hydrates `favourites`
+17. `store/middleware/persistMiddleware.test.ts` — ensure that favourites are serialisable via `urlSyncMiddleware` (bookmarks), and that no localStorage round-trip for favourites exists
 19. `hooks/usePersistentState.test.ts` — returns a URL string containing current filter state
 
 ### Acceptance Criteria
 
 - [ ] All slice actions are tested with at least one positive and one boundary case each
 - [ ] URL round-trip test passes for all `filterSlice` fields
-- [ ] `localStorage` round-trip test passes
+- [ ] URL round-trip test for filter state and favourites (via query params) passes
 - [ ] `npm run test:coverage` exits 0 at 100%
 - [ ] `npm run typecheck` exits 0
 - [ ] `npm run lint` exits 0
@@ -457,7 +455,8 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 
 - `usePersistentState` fully connected to the URL sync middleware (Stage 1 wired the middleware; this stage connects UI to it)
 - `FavouritesMenu` molecule — icon button that opens a `Menu`; each menu item is a saved favourite name; clicking an item calls `onRestore(snapshot)`; a "Save current" item at the top calls `onSave`
-- `AppHeader` updated — renders `FavouritesMenu` wired to `uiSlice`
+ - `FavouritesMenu` molecule — icon button that opens a `Menu`; provides `Copy URL` and `Restore from URL` helpers. The menu does not persist favourites to the store or localStorage; instead it helps the user copy or paste bookmarked URLs.
+ - `AppHeader` updated — renders `FavouritesMenu` wired to URL helpers (no store-based favourites)
 - `hooks/useIFrameBridge.ts` — registers a `window` `"message"` event listener; handles `SET_FILTERS` by validating payload shape then dispatching `filterSlice` actions; sends `postMessage({ type: "FILTERS_APPLIED" })` to `event.source`; cleans up listener on unmount; ignores messages with unknown `type`; ignores messages with invalid `payload`
 - `DataViewerPage` updated — mounts `useIFrameBridge`
 
@@ -469,21 +468,19 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 4. `hooks/useIFrameBridge.test.ts` — `MessageEvent` with a malformed `payload` (missing required fields) does not update the store and does not throw
 5. `hooks/useIFrameBridge.test.ts` — unmounting the hook removes the event listener (assert `window.removeEventListener` was called)
 6. `molecules/FavouritesMenu.test.tsx` — renders a trigger button; clicking it opens a menu
-7. `molecules/FavouritesMenu.test.tsx` — menu renders one item per entry in `favourites` prop
-8. `molecules/FavouritesMenu.test.tsx` — clicking a favourite item calls `onRestore` with that snapshot
-9. `molecules/FavouritesMenu.test.tsx` — clicking "Save current" calls `onSave`
-10. `organisms/AppHeader.test.tsx` — renders `FavouritesMenu`; clicking "Save current" dispatches `addFavourite` to the store
-11. `organisms/AppHeader.test.tsx` — restoring a favourite dispatches `filterSlice` actions that match the snapshot
+7. `molecules/FavouritesMenu.test.tsx` — menu renders help text for copying/pasting URLs; clicking a menu item that represents a URL calls `onRestore(url)`
+8. `molecules/FavouritesMenu.test.tsx` — clicking "Copy URL" produces a URL string representing current filter state
+9. `organisms/AppHeader.test.tsx` — renders `FavouritesMenu`; clicking "Copy URL" calls the clipboard helper; pasting a saved URL into the restore UI dispatches filter hydration
 
 *URL round-trip (integration)*
 
 12. `store/middleware/urlSyncMiddleware.test.ts` — full round-trip: set complex filter state → read `window.location.search` → create new store, pass search string → resulting state equals original (all fields)
-13. `store/middleware/persistMiddleware.test.ts` — full round-trip: add favourite → clear in-memory state → recreate store → `favourites` array is restored from localStorage
+13. `store/middleware/persistMiddleware.test.ts` — ensure no localStorage round-trip for favourites exists; instead, URL round-trip restores the same configuration when opened in a new tab
 
 ### Acceptance Criteria
 
 - [ ] Copying the URL from the browser and opening it in a new tab restores the exact plot configuration
-- [ ] Saving a favourite, reloading the page, and restoring it produces the same chart
+- [ ] Copying or bookmarking the URL and opening it in a new tab restores the same chart configuration
 - [ ] iFrame bridge test passes using a `MessageEvent` mock; `postMessage` acknowledgement is verified
 - [ ] `npm run test:coverage` exits 0 at 100%
 - [ ] `npm run typecheck` exits 0
