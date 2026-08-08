@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import usePersistentState from "./usePersistentState";
+import { serialiseFiltersToSearch } from "../store/middleware/urlSyncMiddleware";
 import useFilterSlice, {
   createFilterSliceInstance,
 } from "../store/slices/filterSlice";
-import { serialiseFiltersToSearch } from "../store/middleware/urlSyncMiddleware";
+import usePersistentState from "./usePersistentState";
 
 describe("usePersistentState mapping", () => {
   test("applyFromURL maps search to slice setters and toURL serialises state", () => {

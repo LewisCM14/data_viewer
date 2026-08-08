@@ -1,6 +1,6 @@
+import { Observable } from "@apollo/client";
 import { describe, expect, test } from "vitest";
 import { retryLink } from "./retryLink";
-import { Observable } from "@apollo/client";
 
 describe("retryLink", () => {
   test("retries once and resolves", async () => {
@@ -17,8 +17,10 @@ describe("retryLink", () => {
         }
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     const result = await new Promise((resolve, reject) => {
+      // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
       const obs = link.request(op, forward as any);
       obs?.subscribe({ next: resolve, error: reject });
     });
@@ -33,9 +35,11 @@ describe("retryLink", () => {
         observer.error(new Error("boom"));
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     await expect(
       new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
         const obs = link.request(op, forward as any);
         obs?.subscribe({ next: resolve, error: reject });
       }),
@@ -46,6 +50,7 @@ describe("retryLink", () => {
     const link = retryLink({ maxAttempts: 2, baseDelay: 0 });
     let calls = 0;
     const forward = () => ({
+      // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link observer for retry testing
       subscribe: (observer: any) => {
         calls += 1;
         if (calls === 1) {
@@ -57,9 +62,11 @@ describe("retryLink", () => {
       },
     });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     await expect(
       new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
         const obs = link.request(op, forward as any);
         obs?.subscribe({ next: resolve, error: reject });
       }),

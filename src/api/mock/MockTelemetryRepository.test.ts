@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import MockTelemetryRepository from "./MockTelemetryRepository";
 
 beforeEach(() => {
@@ -16,7 +16,7 @@ describe("MockTelemetryRepository", () => {
   });
 
   test("callCount increments and channel filter works", async () => {
-    const r1 = await MockTelemetryRepository.getTimeseries();
+    const _r1 = await MockTelemetryRepository.getTimeseries();
     expect(MockTelemetryRepository.callCount).toBe(1);
 
     // request only channel '1' — all returned recordings should include series for channel '1'
@@ -45,6 +45,7 @@ describe("MockTelemetryRepository", () => {
     ).rejects.toBeTruthy();
   });
 });
+
 import { MOCK_RECORDINGS } from "./fixtures";
 
 describe("MockTelemetryRepository (fixtures)", () => {

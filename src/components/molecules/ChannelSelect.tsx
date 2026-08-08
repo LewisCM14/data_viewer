@@ -1,5 +1,5 @@
-import type React from "react";
 import { Box, Stack, Typography } from "@mui/material";
+import type React from "react";
 import Checkbox from "../atoms/Checkbox";
 import ColorSwatch from "../atoms/ColorSwatch";
 
@@ -30,11 +30,11 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   channels,
   selected,
   onToggle,
-  onColorChange,
+  onColorChange: _onColorChange,
 }) => {
   const isAtCapacity = selected.length >= 8;
 
-  const handleToggle = (channelId: string, checked: boolean) => {
+  const handleToggle = (channelId: string, _checked: boolean) => {
     onToggle(channelId);
   };
 

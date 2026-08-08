@@ -1,15 +1,25 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("../../hooks/useGetGraphData", () => ({
-  default: () => ({ data: [{ id: 1 }], loading: false }),
+  default: () => ({
+    data: [
+      {
+        id: "rec1",
+        name: "Recording 1",
+        series: [{ channel: "1", values: [10], timestamps: [1000] }],
+      },
+    ],
+    loading: false,
+    error: null,
+  }),
 }));
 
 import DataViewerPage from "./DataViewerPage";
 
 describe("DataViewerPage", () => {
   test("mounts and contains a plot", () => {
-    const { getByTestId } = render(<DataViewerPage />);
-    expect(getByTestId("plot")).toBeTruthy();
+    render(<DataViewerPage />);
+    expect(screen.getByTestId("plot-canvas")).toBeInTheDocument();
   });
 });

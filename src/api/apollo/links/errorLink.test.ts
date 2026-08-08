@@ -21,8 +21,8 @@ vi.mock("@apollo/client/link/error", () => ({
   },
 }));
 
-import { errorLink } from "./errorLink";
 import { Observable } from "@apollo/client";
+import { errorLink } from "./errorLink";
 
 describe("errorLink", () => {
   test("notifies on networkError and GraphQL errors", async () => {
@@ -36,10 +36,12 @@ describe("errorLink", () => {
         observer.error(errObj as unknown as Error);
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for error testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
 
     await expect(
       new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
         const obs = link.request(op, forward as any);
         obs?.subscribe({ next: resolve, error: reject });
       }),

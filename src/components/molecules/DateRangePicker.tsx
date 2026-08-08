@@ -1,6 +1,6 @@
+import { Box } from "@mui/material";
 import type React from "react";
 import { useEffect } from "react";
-import { Box } from "@mui/material";
 import DatePicker from "../atoms/DatePicker";
 
 export interface DateRangePickerProps {

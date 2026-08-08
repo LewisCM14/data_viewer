@@ -19,4 +19,9 @@ export default defineConfig({
       },
     },
   },
+  resolve: {
+    alias: {
+      "plotly.js/dist/plotly": "plotly.js/dist/plotly.js",
+    },
+  },
 });

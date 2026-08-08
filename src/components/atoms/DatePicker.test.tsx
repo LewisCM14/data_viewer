@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, test, vi } from "vitest";
 import DatePicker from "./DatePicker";
 
 describe("DatePicker", () => {
@@ -46,5 +46,24 @@ describe("DatePicker", () => {
     expect(input).toBeInTheDocument();
     // The value should be set (exact display format depends on MUI's formatting)
     expect(input.value).toBeTruthy();
+  });
+
+  test("calls onChange with null when date is cleared", async () => {
+    const handleChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <DatePicker
+        label="Start Date"
+        value="2024-01-15"
+        onChange={handleChange}
+      />,
+    );
+
+    const input = screen.getByLabelText("Start Date");
+    await user.clear(input);
+
+    // Should call onChange with null when cleared
+    expect(handleChange).toHaveBeenCalledWith(null);
   });
 });

@@ -1,5 +1,5 @@
+import { FormControlLabel, Checkbox as MuiCheckbox } from "@mui/material";
 import type React from "react";
-import { Checkbox as MuiCheckbox, FormControlLabel } from "@mui/material";
 
 export interface CheckboxProps {
   label: string;

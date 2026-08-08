@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import useFilters from "./useFilters";
 import { getLastFilterSlice } from "../store/slices/filterSlice";
+import useFilters from "./useFilters";
 
 describe("useFilters", () => {
   test("proxies to filter slice actions", () => {

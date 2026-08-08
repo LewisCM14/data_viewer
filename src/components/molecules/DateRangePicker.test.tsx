@@ -1,7 +1,7 @@
-import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import React from "react";
+import { describe, expect, test, vi } from "vitest";
 import DateRangePicker from "./DateRangePicker";
 
 describe("DateRangePicker", () => {

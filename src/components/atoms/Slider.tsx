@@ -1,10 +1,5 @@
+import { Box, Slider as MuiSlider, Typography } from "@mui/material";
 import type React from "react";
-import {
-  Box,
-  Slider as MuiSlider,
-  Typography,
-  type SliderProps as MuiSliderProps,
-} from "@mui/material";
 
 export interface SliderMark {
   value: number;
@@ -40,6 +35,7 @@ export const Slider: React.FC<SliderProps> = ({
   disabled = false,
 }) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
+    /* istanbul ignore else -- range mode not supported, newValue will always be number */
     if (typeof newValue === "number") {
       onChange(newValue);
     }

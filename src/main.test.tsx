@@ -10,8 +10,15 @@ describe("main.tsx", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     useGetGraphDataMock.mockImplementation(() => ({
-      data: [{ id: 1 }],
+      data: [
+        {
+          id: "rec1",
+          name: "Recording 1",
+          series: [{ channel: "1", values: [10], timestamps: [1000] }],
+        },
+      ],
       loading: false,
+      error: null,
     }));
     await import("./main");
 
@@ -19,10 +26,19 @@ describe("main.tsx", () => {
     vi.resetModules();
     document.body.innerHTML = '<div id="root"></div>';
     useGetGraphDataMock.mockImplementation(() => ({
-      data: [{ id: 1 }],
+      data: [
+        {
+          id: "rec1",
+          name: "Recording 1",
+          series: [{ channel: "1", values: [10], timestamps: [1000] }],
+        },
+      ],
       loading: false,
+      error: null,
     }));
     await import("./main");
-    await waitFor(() => expect(screen.getByTestId("plot")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId("plot-canvas")).toBeInTheDocument(),
+    );
   });
 });

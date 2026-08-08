@@ -1,6 +1,6 @@
+import { Observable } from "@apollo/client";
 import { describe, expect, test } from "vitest";
 import { timeoutLink } from "./timeoutLink";
-import { Observable } from "@apollo/client";
 
 describe("timeoutLink", () => {
   test("completes when forward completes quickly", async () => {
@@ -11,8 +11,10 @@ describe("timeoutLink", () => {
         observer.complete();
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for timeout testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     const result = await new Promise((resolve, reject) => {
+      // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
       const obs = link.request(op, forward as any);
       obs?.subscribe({ next: resolve, error: reject });
     });
@@ -26,9 +28,11 @@ describe("timeoutLink", () => {
         // never call next/complete
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for timeout testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     await expect(
       new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
         const obs = link.request(op, forward as any);
         obs?.subscribe({ next: resolve, error: reject });
       }),
@@ -43,7 +47,9 @@ describe("timeoutLink", () => {
         return () => {};
       });
 
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for timeout testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
     const obs = link.request(op, forward as any);
     const sub = obs?.subscribe({
       next: () => {},

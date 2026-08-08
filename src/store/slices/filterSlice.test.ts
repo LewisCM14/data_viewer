@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import useFilterSlice, {
-  type FilterState,
-  initialFilterState,
   createFilterSliceInstance,
+  type FilterState,
   getLastFilterSlice,
+  initialFilterState,
 } from "./filterSlice";
 
 describe("filterSlice initial state", () => {

@@ -1,4 +1,3 @@
-import type React from "react";
 import {
   FormControl,
   InputLabel,
@@ -6,6 +5,7 @@ import {
   Select,
   type SelectChangeEvent,
 } from "@mui/material";
+import type React from "react";
 
 export interface SelectFieldOption {
   value: string;

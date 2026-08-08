@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, test, vi } from "vitest";
 import SelectField from "./SelectField";
 
 describe("SelectField", () => {
