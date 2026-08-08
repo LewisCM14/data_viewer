@@ -21,9 +21,10 @@ describe("timeoutLink", () => {
 
   test("errors with Timeout when forward never completes", async () => {
     const link = timeoutLink(10);
-    const forward = () => new Observable(() => {
-      // never call next/complete
-    });
+    const forward = () =>
+      new Observable(() => {
+        // never call next/complete
+      });
 
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     await expect(
@@ -44,7 +45,11 @@ describe("timeoutLink", () => {
 
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
     const obs = link.request(op, forward as any);
-    const sub = obs?.subscribe({ next: () => {}, error: () => {}, complete: () => {} });
+    const sub = obs?.subscribe({
+      next: () => {},
+      error: () => {},
+      complete: () => {},
+    });
     // unsubscribing should trigger cleanup code paths
     expect(() => sub?.unsubscribe()).not.toThrow();
   });

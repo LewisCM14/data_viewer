@@ -30,7 +30,9 @@ describe("MockTelemetryRepository", () => {
   test("honours abort signal when slow response", async () => {
     MockTelemetryRepository.simulateSlowResponse = true;
     const controller = new AbortController();
-    const p = MockTelemetryRepository.getTimeseries({ signal: controller.signal });
+    const p = MockTelemetryRepository.getTimeseries({
+      signal: controller.signal,
+    });
     controller.abort();
     await expect(p).rejects.toBeTruthy();
   });

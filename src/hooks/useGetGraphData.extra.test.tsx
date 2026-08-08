@@ -19,7 +19,11 @@ function TestComponent(opts?: any) {
 
 describe("useGetGraphData guards", () => {
   test("pre-flight estimatedPoints blocks request and notifies", async () => {
-    render(<TestComponent estimatedPoints={1000} options={{}} maxDataPoints={10} /> as any);
+    render(
+      (
+        <TestComponent estimatedPoints={1000} options={{}} maxDataPoints={10} />
+      ) as any,
+    );
     // wait for the hook effect to run
     await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
     expect(mockNotify).toHaveBeenCalled();
@@ -34,13 +38,17 @@ describe("useGetGraphData guards", () => {
           id: "r",
           name: "r",
           series: [
-            { channel: "1", values: new Array(10).fill(1), timestamps: new Array(10).fill(1) },
+            {
+              channel: "1",
+              values: new Array(10).fill(1),
+              timestamps: new Array(10).fill(1),
+            },
           ],
         },
       ]),
     );
 
-    render(<TestComponent params={{}} maxDataPoints={5} /> as any);
+    render((<TestComponent params={{}} maxDataPoints={5} />) as any);
     await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
     expect(mockNotify).toHaveBeenCalled();
   });
@@ -51,7 +59,7 @@ describe("useGetGraphData guards", () => {
       Promise.reject(new Error("fail")),
     );
 
-    render(<TestComponent params={{}} maxDataPoints={100} /> as any);
+    render((<TestComponent params={{}} maxDataPoints={100} />) as any);
     await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
     expect(mockNotify).toHaveBeenCalled();
   });
@@ -63,7 +71,7 @@ describe("useGetGraphData guards", () => {
     );
 
     mockNotify.mockReset();
-    render(<TestComponent params={{}} maxDataPoints={100} /> as any);
+    render((<TestComponent params={{}} maxDataPoints={100} />) as any);
     await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
     expect(mockNotify).not.toHaveBeenCalled();
   });
@@ -80,7 +88,7 @@ describe("useGetGraphData guards", () => {
     );
 
     mockNotify.mockReset();
-    render(<TestComponent params={{}} maxDataPoints={1000} /> as any);
+    render((<TestComponent params={{}} maxDataPoints={1000} />) as any);
     await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
     expect(mockNotify).not.toHaveBeenCalled();
     expect(screen.getByTestId("data").textContent).toBe(JSON.stringify([rec]));

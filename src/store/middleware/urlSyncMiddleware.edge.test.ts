@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { serialiseFiltersToSearch, hydrateFiltersFromSearch } from "./urlSyncMiddleware";
+import {
+  serialiseFiltersToSearch,
+  hydrateFiltersFromSearch,
+} from "./urlSyncMiddleware";
 
 describe("urlSyncMiddleware edge cases", () => {
   test("serialise handles circular arrays by falling back to join", () => {

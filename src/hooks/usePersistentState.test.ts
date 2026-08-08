@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import usePersistentState from "./usePersistentState";
-import useFilterSlice, { createFilterSliceInstance } from "../store/slices/filterSlice";
+import useFilterSlice, {
+  createFilterSliceInstance,
+} from "../store/slices/filterSlice";
 import { serialiseFiltersToSearch } from "../store/middleware/urlSyncMiddleware";
 
 describe("usePersistentState mapping", () => {
@@ -17,7 +19,9 @@ describe("usePersistentState mapping", () => {
       channelColours: { c1: "#fff" },
     } as const;
 
-    const q = serialiseFiltersToSearch(state as unknown as Record<string, unknown>);
+    const q = serialiseFiltersToSearch(
+      state as unknown as Record<string, unknown>,
+    );
     applyFromURL(q);
 
     const got = slice.getState();
