@@ -43,7 +43,6 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   debounceMs: _debounceMs,
 }) => {
   const handleChange = (_event: SyntheticEvent, newValue: Channel[] | null) => {
-    /* istanbul ignore next */
     const newIds = (newValue ?? []).map((v) => v.id);
 
     newIds.forEach((id) => {

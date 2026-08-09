@@ -1,16 +1,13 @@
 import { useEffect } from "react";
-import {
-  parseFiltersFromQuery,
-  serializeFiltersToQuery,
-  type FilterSnapshot,
-} from "../types";
+import { parseFiltersFromQuery, serializeFiltersToQuery } from "../types";
 import { useFilterStore, type FilterState } from "../store/useFilterStore";
 import {
   serialiseFiltersToSearch,
   hydrateFiltersFromSearch,
 } from "../store/middleware/urlSyncMiddleware";
-import useFilterSlice, {
+import {
   getLastFilterSlice,
+  createFilterSliceInstance,
 } from "../store/slices/filterSlice";
 
 /**
@@ -20,10 +17,9 @@ import useFilterSlice, {
 export function usePersistentState() {
   const replaceFilters = useFilterStore((s) => s.replaceFilters);
 
-  /* istanbul ignore next */
   useEffect(() => {
     try {
-      const snapshot = parseFiltersFromQuery(window.location.search);
+      const snapshot = parseFiltersFromQuery(globalThis.location.search);
       const hasAny =
         snapshot.equipmentId !== undefined ||
         (snapshot.digitalChannels && snapshot.digitalChannels.length > 0) ||
@@ -35,13 +31,13 @@ export function usePersistentState() {
           Object.keys(snapshot.channelColours).length > 0);
 
       if (hasAny) replaceFilters(snapshot);
-    } catch (_e) {
+    } catch (_error_) {
       // ignore
     }
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
     const unsub = useFilterStore.subscribe((s: FilterState) => {
-      if (timeout) clearTimeout(timeout as ReturnType<typeof setTimeout>);
+      if (timeout) clearTimeout(timeout);
       timeout = setTimeout(() => {
         try {
           const q = serializeFiltersToQuery({
@@ -51,12 +47,12 @@ export function usePersistentState() {
             dateRange: s.dateRange,
             sampleRate: s.sampleRate,
             channelColours: s.channelColours,
-          } as FilterSnapshot);
+          });
           const url = q
-            ? `${window.location.pathname}?${q}`
-            : window.location.pathname;
-          window.history.replaceState({}, "", url);
-        } catch (_e) {
+            ? `${globalThis.location.pathname}?${q}`
+            : globalThis.location.pathname;
+          globalThis.history.replaceState({}, "", url);
+        } catch (_error_) {
           // ignore
         }
       }, 200);
@@ -64,18 +60,18 @@ export function usePersistentState() {
 
     const onPop = () => {
       try {
-        const snapshot = parseFiltersFromQuery(window.location.search);
+        const snapshot = parseFiltersFromQuery(globalThis.location.search);
         replaceFilters(snapshot);
-      } catch (_e) {
+      } catch (_error_) {
         // ignore
       }
     };
-    window.addEventListener("popstate", onPop);
+    globalThis.addEventListener("popstate", onPop);
 
     return () => {
       unsub();
-      window.removeEventListener("popstate", onPop);
-      if (timeout) clearTimeout(timeout as ReturnType<typeof setTimeout>);
+      globalThis.removeEventListener("popstate", onPop);
+      if (timeout) clearTimeout(timeout);
     };
   }, [replaceFilters]);
 }
@@ -88,7 +84,7 @@ export function usePersistentState() {
 export default function createPersistentState() {
   // Legacy factory compatible with earlier modules/tests — operates on the
   // legacy slice implementation rather than the Zustand store.
-  const s = getLastFilterSlice() ?? useFilterSlice();
+  const s = getLastFilterSlice() ?? createFilterSliceInstance();
 
   function toURL(): string {
     const state = s.getState();
@@ -97,7 +93,6 @@ export default function createPersistentState() {
     );
   }
 
-  /* istanbul ignore next */
   function applyFromURL(search: string) {
     const obj = hydrateFiltersFromSearch(search);
     // Map recognised keys back to slice setters

@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { ApolloLink, Observable } from "@apollo/client";
 
 export function timeoutLink(timeout = 30000) {

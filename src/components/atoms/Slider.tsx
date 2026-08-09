@@ -35,7 +35,6 @@ export const Slider: React.FC<SliderProps> = ({
   disabled = false,
 }) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
-    /* istanbul ignore else -- range mode not supported, newValue will always be number */
     if (typeof newValue === "number") {
       onChange(newValue);
     }
@@ -44,7 +43,7 @@ export const Slider: React.FC<SliderProps> = ({
   return (
     <Box sx={{ px: 2 }}>
       <Typography
-        id={`slider-label-${label.toLowerCase().replace(/\s+/g, "-")}`}
+        id={`slider-label-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
         gutterBottom
       >
         {label}
@@ -58,8 +57,8 @@ export const Slider: React.FC<SliderProps> = ({
         step={step}
         disabled={disabled}
         valueLabelDisplay="auto"
-        aria-labelledby={`slider-label-${label.toLowerCase().replace(/\s+/g, "-")}`}
-        data-testid={`slider-${label.toLowerCase().replace(/\s+/g, "-")}`}
+        aria-labelledby={`slider-label-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
+        data-testid={`slider-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
       />
     </Box>
   );

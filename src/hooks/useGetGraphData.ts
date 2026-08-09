@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { useCallback, useEffect, useRef, useState } from "react";
 import getRepository from "../api/repository";
 import useNotificationSlice from "../store/slices/notificationSlice";
@@ -20,7 +19,9 @@ export default function useGetGraphData(options?: {
 }) {
   const [data, setData] = useState<BucketedRecording[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [_error, setError] = useState<Error | null>(null);
+  // Error state kept for potential UI, but value is unused by callers.
+  // Keep setter local for future use if needed.
+  const [, setError] = useState<Error | null>(null);
   const currentController = useRef<AbortController | null>(null);
   const notifier = useNotificationSlice();
 
@@ -56,10 +57,10 @@ export default function useGetGraphData(options?: {
 
       try {
         const repo = getRepository();
-        const res = await repo.getTimeseries({
-          ...(params ?? {}),
-          signal: controller.signal,
-        });
+        const requestPayload = params
+          ? { ...params, signal: controller.signal }
+          : { signal: controller.signal };
+        const res = await repo.getTimeseries(requestPayload);
 
         // If returned items don't include `series`, keep raw data and skip
         // the MAX_DATA_POINTS check to remain compatible with simple tests.
@@ -81,17 +82,16 @@ export default function useGetGraphData(options?: {
           return res as BucketedRecording[];
         }
 
-        const total = (res as BucketedRecording[]).reduce(
-          (acc: number, rec: BucketedRecording) => {
-            const series = Array.isArray(rec.series) ? rec.series : [];
-            const sCount = series.reduce((sAcc: number, s) => {
-              const vals = s.values;
-              return sAcc + (Array.isArray(vals) ? vals.length : 0);
-            }, 0);
-            return acc + sCount;
-          },
-          0,
-        );
+        const bucketed = res as BucketedRecording[];
+
+        const total = bucketed.reduce((acc: number, rec: BucketedRecording) => {
+          const series = Array.isArray(rec.series) ? rec.series : [];
+          const sCount = series.reduce((sAcc: number, s) => {
+            const vals = s.values;
+            return sAcc + (Array.isArray(vals) ? vals.length : 0);
+          }, 0);
+          return acc + sCount;
+        }, 0);
 
         if (total > MAX_DATA_POINTS) {
           notifier.showNotification(
@@ -103,9 +103,9 @@ export default function useGetGraphData(options?: {
           return null;
         }
 
-        setData(res as BucketedRecording[]);
+        setData(bucketed);
         setLoading(false);
-        return res as BucketedRecording[];
+        return bucketed;
       } catch (err) {
         const errName =
           err && typeof err === "object" && "name" in err

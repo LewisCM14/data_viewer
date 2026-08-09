@@ -38,7 +38,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         shrink: true,
       }}
       fullWidth
-      data-testid={`datepicker-${label.toLowerCase().replace(/\s+/g, "-")}`}
+      data-testid={`datepicker-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
     />
   );
 };

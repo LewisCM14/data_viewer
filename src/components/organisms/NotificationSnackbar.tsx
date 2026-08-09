@@ -17,7 +17,6 @@ export const NotificationSnackbar: React.FC = () => {
     _event?: React.SyntheticEvent | Event,
     reason?: string,
   ) => {
-    /* istanbul ignore next -- MUI Snackbar clickaway behavior is internal; tested via integration */
     if (reason === "clickaway") {
       return;
     }

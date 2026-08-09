@@ -40,7 +40,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     onChange(event.target.value);
   };
 
-  const labelId = `select-${label.toLowerCase().replace(/\s+/g, "-")}`;
+  const labelId = `select-${label.toLowerCase().replaceAll(/\s+/g, "-")}`;
 
   return (
     <FormControl fullWidth required={required} disabled={disabled}>
@@ -50,7 +50,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         value={value}
         label={label}
         onChange={handleChange}
-        data-testid={`select-${label.toLowerCase().replace(/\s+/g, "-")}`}
+        data-testid={`select-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
       >
         {options.map((option) => (
           <MenuItem key={option.value} value={option.value}>

@@ -30,7 +30,7 @@ export default class ApolloTelemetryRepository implements TelemetryRepository {
       }
     `;
 
-    const res = await this.client.query<{ timeseries?: BucketedRecording[] }>({
+    const res = await this.client.query({
       query: QUERY,
       variables: {
         equipmentId: params?.equipmentId,
@@ -44,11 +44,11 @@ export default class ApolloTelemetryRepository implements TelemetryRepository {
       },
     });
 
-    const payload = res?.data?.timeseries ?? [];
-    return Array.isArray(payload) ? (payload as BucketedRecording[]) : [];
+    const payload =
+      (res.data as { timeseries?: BucketedRecording[] })?.timeseries ?? [];
+    return Array.isArray(payload) ? payload : [];
   }
 
-  /* istanbul ignore next */
   async getFilterOptions(): Promise<FilterOptions> {
     try {
       const QUERY = gql`
@@ -61,16 +61,16 @@ export default class ApolloTelemetryRepository implements TelemetryRepository {
         }
       `;
 
-      const res = await this.client.query<{ filterOptions?: FilterOptions }>({
+      const res = await this.client.query({
         query: QUERY,
       });
-      const payload = res?.data?.filterOptions;
-      /* istanbul ignore next */
+      const payload = (res.data as { filterOptions?: FilterOptions })
+        ?.filterOptions;
+
       if (!payload) {
         return { equipments: [], digitalChannels: [], analogueChannels: [] };
       }
 
-      /* istanbul ignore next */
       return {
         equipments: Array.isArray(payload.equipments) ? payload.equipments : [],
         digitalChannels: Array.isArray(payload.digitalChannels)
@@ -80,7 +80,11 @@ export default class ApolloTelemetryRepository implements TelemetryRepository {
           ? payload.analogueChannels
           : [],
       };
-    } catch (_e) {
+    } catch (error_) {
+      // Log the underlying error for diagnostics and return a safe default
+      // so callers don't need to handle exceptions for missing data.
+      // eslint-disable-next-line no-console
+      console.error("ApolloTelemetryRepository.getFilterOptions error", error_);
       return { equipments: [], digitalChannels: [], analogueChannels: [] };
     }
   }

@@ -11,7 +11,7 @@ export function useIFrameBridge() {
         if (!ev.data || typeof ev.data !== "object") return;
         // biome-ignore lint/suspicious/noExplicitAny: postMessage payloads have a loose shape
         const { type, payload } = ev.data as { type?: string; payload?: any };
-        /* istanbul ignore next */
+
         if (type === "SET_FILTERS") {
           // payload may be a query-string or FilterSnapshot
           let snapshot: FilterSnapshot | null = null;
@@ -33,12 +33,12 @@ export function useIFrameBridge() {
                 { type: "FILTERS_APPLIED" },
                 ev.origin || "*",
               );
-            } catch (_e) {
+            } catch (_error_) {
               // ignore postMessage errors
             }
           }
         }
-      } catch (_e) {
+      } catch (_error_) {
         // swallow bad messages
       }
     }

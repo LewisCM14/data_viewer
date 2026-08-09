@@ -9,7 +9,7 @@
 export function serialiseFiltersToSearch(params: Record<string, unknown>) {
   const sp = new URLSearchParams();
   Object.keys(params).forEach((k) => {
-    const v = params[k as keyof typeof params];
+    const v = params[k];
     if (v == null) return;
     if (Array.isArray(v)) {
       try {
@@ -21,6 +21,8 @@ export function serialiseFiltersToSearch(params: Record<string, unknown>) {
       try {
         sp.set(k, JSON.stringify(v));
       } catch {
+        // Fallback: object couldn't be JSON.stringified (circular refs),
+        // use explicit String conversion as a last resort.
         sp.set(k, String(v));
       }
     } else {

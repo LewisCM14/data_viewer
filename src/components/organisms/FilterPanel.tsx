@@ -78,7 +78,6 @@ export const FilterPanel: React.FC = () => {
     from: string | null;
     to: string | null;
   }) => {
-    /* istanbul ignore next */
     filters.setDateRange(from && to ? [from, to] : null);
   };
 
@@ -90,7 +89,6 @@ export const FilterPanel: React.FC = () => {
     filters.setSampleRate(value);
   };
 
-  /* istanbul ignore next -- Color changing UI not implemented in Stage 5; reserved for future stages */
   const handleColorChange = (channelId: string, color: string) => {
     filters.setChannelColour(channelId, color);
   };
@@ -105,7 +103,6 @@ export const FilterPanel: React.FC = () => {
   const digitalChannels = options?.digitalChannels ?? MOCK_DIGITAL_CHANNELS;
   const analogueChannels = options?.analogueChannels ?? MOCK_ANALOGUE_CHANNELS;
 
-  /* istanbul ignore next */
   return (
     <Box sx={{ p: 2 }}>
       <Stack spacing={3}>
@@ -138,7 +135,6 @@ export const FilterPanel: React.FC = () => {
           onChange={handleDateRangeChange}
           onError={handleDateRangeError}
         />
-        {/* istanbul ignore next */}
         <SampleRateSlider
           value={state.sampleRate ?? 1}
           onChange={handleSampleRateChange}

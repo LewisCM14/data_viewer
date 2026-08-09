@@ -47,3 +47,4 @@ Thumbs.db
 .eslintcache
 docs/api
 sonar.md
+.scannerwork

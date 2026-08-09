@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import type { BucketedRecording, TimeseriesQueryParams } from "../../types";
 import { MOCK_RECORDINGS } from "./fixtures";
 
@@ -40,7 +39,7 @@ const MockTelemetryRepository: MockRepoType = {
     params?: TimeseriesQueryParams,
   ): Promise<BucketedRecording[]> {
     if (MockTelemetryRepository.simulateError) {
-      return Promise.reject(new Error("simulated error"));
+      throw new Error("simulated error");
     }
 
     MockTelemetryRepository.callCount = MockTelemetryRepository.callCount + 1;
@@ -54,7 +53,7 @@ const MockTelemetryRepository: MockRepoType = {
 
     const delay = MockTelemetryRepository.simulateSlowResponse ? 200 : 0;
 
-    return new Promise<BucketedRecording[]>((resolve, reject) => {
+    return await new Promise<BucketedRecording[]>((resolve, reject) => {
       const timer = setTimeout(
         () => resolve(result as BucketedRecording[]),
         delay,
@@ -96,7 +95,7 @@ const MockTelemetryRepository: MockRepoType = {
       { id: "a4", name: "Analogue 4", color: "#4BC0C0" },
     ];
 
-    return Promise.resolve({ equipments, digitalChannels, analogueChannels });
+    return { equipments, digitalChannels, analogueChannels };
   },
 };
 

@@ -14,9 +14,8 @@ export default function useLoadOptions() {
       const repo = getRepository();
       if (typeof repo.getFilterOptions === "function") {
         const opts = await repo.getFilterOptions();
-        setOptions(opts as FilterOptions);
+        setOptions(opts);
       } else {
-        /* istanbul ignore next */
         // fallback to small default set
         setOptions({
           equipments: [
@@ -40,7 +39,6 @@ export default function useLoadOptions() {
         });
       }
     } catch (e) {
-      /* istanbul ignore next */
       setError(e as Error);
     } finally {
       setLoading(false);

@@ -28,7 +28,7 @@ export interface FilterOptions {
 /**
  * Serialises a FilterSnapshot to a query-string (without the leading `?`).
  */
-/* istanbul ignore next */
+
 export function serializeFiltersToQuery(snapshot: FilterSnapshot): string {
   const params = new URLSearchParams();
   if (snapshot.equipmentId != null)
@@ -55,12 +55,12 @@ export function serializeFiltersToQuery(snapshot: FilterSnapshot): string {
 /**
  * Parses a query string or URLSearchParams into a FilterSnapshot.
  */
-/* istanbul ignore next */
+
 export function parseFiltersFromQuery(
   q: string | URLSearchParams,
 ): FilterSnapshot {
   const params =
-    typeof q === "string" ? new URLSearchParams(q.replace(/^\?/, "")) : q;
+    typeof q === "string" ? new URLSearchParams(q.replaceAll(/^\?/g, "")) : q;
   const equipmentId = params.get("equipmentId");
   const digital = params.get("digital");
   const analogue = params.get("analogue");

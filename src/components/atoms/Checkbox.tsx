@@ -31,7 +31,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
           checked={checked}
           onChange={handleChange}
           disabled={disabled}
-          data-testid={`checkbox-${label.toLowerCase().replace(/\s+/g, "-")}`}
+          data-testid={`checkbox-${label.toLowerCase().replaceAll(/\s+/g, "-")}`}
         />
       }
       label={label}

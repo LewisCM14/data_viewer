@@ -25,7 +25,6 @@ export type FilterState = {
 
 const MAX_CHANNELS = 8;
 
-/* istanbul ignore next */
 export const useFilterStore = create<FilterState>((set, _get) => ({
   equipmentId: null,
   digitalChannels: [],
@@ -57,7 +56,6 @@ export const useFilterStore = create<FilterState>((set, _get) => ({
   addAnalogueChannel: (channel) =>
     set(
       (state) =>
-        /* istanbul ignore next */
         ({
           analogueChannels: state.analogueChannels.includes(channel)
             ? state.analogueChannels
@@ -79,7 +77,7 @@ export const useFilterStore = create<FilterState>((set, _get) => ({
       const total =
         state.digitalChannels.length + state.analogueChannels.length;
       if (!exists && total >= MAX_CHANNELS) return state; // ignore add beyond cap
-      /* istanbul ignore next */
+
       return {
         digitalChannels: exists
           ? state.digitalChannels.filter((c) => c !== channel)
@@ -93,7 +91,7 @@ export const useFilterStore = create<FilterState>((set, _get) => ({
       const total =
         state.digitalChannels.length + state.analogueChannels.length;
       if (!exists && total >= MAX_CHANNELS) return state;
-      /* istanbul ignore next */
+
       return {
         analogueChannels: exists
           ? state.analogueChannels.filter((c) => c !== channel)
@@ -111,7 +109,6 @@ export const useFilterStore = create<FilterState>((set, _get) => ({
   replaceFilters: (snapshot) =>
     set(
       () =>
-        /* istanbul ignore next */
         ({
           equipmentId: snapshot.equipmentId ?? null,
           digitalChannels: snapshot.digitalChannels ?? [],

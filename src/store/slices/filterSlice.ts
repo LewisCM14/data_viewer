@@ -46,7 +46,7 @@ function makeSlice(): SliceAPI {
   // Create a per-instance Zustand store so each slice instance remains
   // isolated for tests and callers, but internally uses Zustand for state
   // management.
-  /* istanbul ignore next */
+
   const useSlice = create<
     FilterState & {
       setState: (p: Partial<FilterState>) => void;
@@ -62,10 +62,10 @@ function makeSlice(): SliceAPI {
     }
   >((set, _get) => ({
     ...initialFilterState,
-    /* istanbul ignore next */
+
     setState: (p: Partial<FilterState>) =>
       set((s) => ({ ...s, ...p }) as FilterState),
-    /* istanbul ignore next */
+
     setEquipment: (id: string | null) =>
       set(() => ({ equipmentId: id }) as FilterState),
     addDigitalChannel: (id: string) =>
@@ -98,10 +98,10 @@ function makeSlice(): SliceAPI {
             analogueChannels: s.analogueChannels.filter((c) => c !== id),
           }) as Partial<FilterState>,
       ),
-    /* istanbul ignore next */
+
     setDateRange: (r: [string, string] | null) =>
       set(() => ({ dateRange: r }) as FilterState),
-    /* istanbul ignore next */
+
     setSampleRate: (n?: number) =>
       set(() => ({ sampleRate: n }) as FilterState),
     setChannelColour: (id: string, c: string) =>
@@ -126,7 +126,7 @@ function makeSlice(): SliceAPI {
         channelColours: s.channelColours,
       } as FilterState;
     },
-    /* istanbul ignore next */
+
     setState: (p: Partial<FilterState>) =>
       useSlice.setState(
         (s) =>
@@ -148,7 +148,7 @@ function makeSlice(): SliceAPI {
               : {}),
           }) as Partial<FilterState>,
       ),
-    /* istanbul ignore next */
+
     setEquipment: (id: string | null) =>
       useSlice.setState(() => ({ equipmentId: id }) as Partial<FilterState>),
     addDigitalChannel: (id: string) =>
@@ -159,10 +159,10 @@ function makeSlice(): SliceAPI {
       useSlice.getState().addAnalogueChannel(id),
     removeAnalogueChannel: (id: string) =>
       useSlice.getState().removeAnalogueChannel(id),
-    /* istanbul ignore next */
+
     setDateRange: (r: [string, string] | null) =>
       useSlice.setState(() => ({ dateRange: r }) as Partial<FilterState>),
-    /* istanbul ignore next */
+
     setSampleRate: (n?: number) =>
       useSlice.setState(() => ({ sampleRate: n }) as Partial<FilterState>),
     setChannelColour: (id: string, c: string) =>
