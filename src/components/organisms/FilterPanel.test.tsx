@@ -11,6 +11,7 @@ import type useFilterSlice from "../../store/slices/filterSlice";
 import type { FilterState } from "../../store/slices/filterSlice";
 import type useNotificationSlice from "../../store/slices/notificationSlice";
 import FilterPanel from "./FilterPanel";
+import MockTelemetryRepository from "../../api/mock/MockTelemetryRepository";
 
 // Mock the filter and notification slices
 let mockFilterState: ReturnType<typeof useFilterSlice>;
@@ -78,6 +79,10 @@ describe("FilterPanel", () => {
         severity: "info" as const,
       },
     };
+
+    // reset mock repo counters
+    MockTelemetryRepository.callCount = 0;
+    MockTelemetryRepository.simulateSlowResponse = false;
   });
 
   test("renders all four filter molecule regions", () => {
@@ -343,5 +348,43 @@ describe("FilterPanel", () => {
       });
       expect(analogueOption).toHaveAttribute("aria-disabled", "true");
     }
+  });
+
+  test("Plot button disabled until required inputs are present and calls repo when valid", async () => {
+    const user = userEvent.setup();
+    // initial render -- should be disabled
+    const { rerender } = render(<FilterPanel />);
+    const plotBtn = screen.getByTestId("plot-button");
+    expect(plotBtn).toBeDisabled();
+
+    // set valid state by replacing the reference so getState() observes change
+    currentState = {
+      equipmentId: "eq1",
+      digitalChannels: ["d1"],
+      analogueChannels: [],
+      dateRange: ["2024-01-01", "2024-01-02"],
+      sampleRate: 1,
+      channelColours: {},
+    } as unknown as FilterState;
+
+    // verify test state replaced successfully
+    expect(currentState.equipmentId).toBe("eq1");
+
+    // re-render with valid state
+    rerender(<FilterPanel />);
+    const plotBtnAfter = screen.getByTestId("plot-button");
+
+    // wait for any initial fetch to finish so button becomes enabled
+    await waitFor(() =>
+      expect(screen.getByTestId("plot-button")).not.toBeDisabled(),
+    );
+
+    const before = MockTelemetryRepository.callCount;
+    await user.click(plotBtnAfter as HTMLElement);
+
+    // wait for another repo call to be registered after pressing Plot
+    await waitFor(() =>
+      expect(MockTelemetryRepository.callCount).toBeGreaterThan(before),
+    );
   });
 });

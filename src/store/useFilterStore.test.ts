@@ -52,11 +52,13 @@ describe("useFilterStore actions", () => {
   });
 
   it("sets dateRange, sampleRate and colours", () => {
-    useFilterStore.getState().setDateRange(["2024-01-01", "2024-12-31"]);
-    expect(useFilterStore.getState().dateRange).toEqual([
-      "2024-01-01",
-      "2024-12-31",
-    ]);
+    useFilterStore
+      .getState()
+      .setDateRange({ from: "2024-01-01", to: "2024-12-31" });
+    expect(useFilterStore.getState().dateRange).toEqual({
+      from: "2024-01-01",
+      to: "2024-12-31",
+    });
     useFilterStore.getState().setSampleRate(10);
     expect(useFilterStore.getState().sampleRate).toBe(10);
     useFilterStore.getState().setChannelColour("d1", "#123456");
@@ -64,16 +66,14 @@ describe("useFilterStore actions", () => {
   });
 
   it("replaceFilters and resetFilters work", () => {
-    useFilterStore
-      .getState()
-      .replaceFilters({
-        equipmentId: 9,
-        digitalChannels: ["d9"],
-        analogueChannels: ["a9"],
-        dateRange: { from: "x", to: "y" },
-        sampleRate: 5,
-        channelColours: { d9: "#fff" },
-      });
+    useFilterStore.getState().replaceFilters({
+      equipmentId: 9,
+      digitalChannels: ["d9"],
+      analogueChannels: ["a9"],
+      dateRange: { from: "x", to: "y" },
+      sampleRate: 5,
+      channelColours: { d9: "#fff" },
+    });
     expect(useFilterStore.getState().equipmentId).toBe(9);
     expect(useFilterStore.getState().digitalChannels).toEqual(["d9"]);
     useFilterStore.getState().resetFilters();

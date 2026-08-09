@@ -47,10 +47,9 @@ describe("useIFrameBridge", () => {
     const { unmount } = renderHook(() => useIFrameBridge());
     const payload = { equipmentId: 21, digitalChannels: ["d21"] };
     window.dispatchEvent(
-      new MessageEvent(
-        "message",
-        { data: { type: "SET_FILTERS", payload } } as unknown as MessageEventInit,
-      ),
+      new MessageEvent("message", {
+        data: { type: "SET_FILTERS", payload },
+      } as unknown as MessageEventInit),
     );
     const s = useFilterStore.getState();
     expect(s.equipmentId).toBe(21);

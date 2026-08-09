@@ -13,6 +13,18 @@ export type FilterSnapshot = {
   channelColours?: Record<string, string>;
 };
 
+export interface Channel {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface FilterOptions {
+  equipments: { id: string; name: string }[];
+  digitalChannels: Channel[];
+  analogueChannels: Channel[];
+}
+
 /**
  * Serialises a FilterSnapshot to a query-string (without the leading `?`).
  */
@@ -111,4 +123,5 @@ export interface BucketedRecording {
 
 export interface TelemetryRepository {
   getTimeseries(params?: TimeseriesQueryParams): Promise<BucketedRecording[]>;
+  getFilterOptions?: () => Promise<FilterOptions>;
 }

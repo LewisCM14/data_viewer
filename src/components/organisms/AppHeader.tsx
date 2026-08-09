@@ -8,6 +8,7 @@ export const AppHeader: React.FC = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Data Viewer
         </Typography>
+        {/* favourites menu removed; users can bookmark URLs directly in browser */}
       </Toolbar>
     </AppBar>
   );

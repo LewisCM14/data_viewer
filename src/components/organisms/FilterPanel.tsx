@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Button, CircularProgress } from "@mui/material";
 import type React from "react";
 import useFilters from "../../hooks/useFilters";
 import useNotificationSlice from "../../store/slices/notificationSlice";
@@ -10,6 +10,9 @@ import {
 import DateRangePicker from "../molecules/DateRangePicker";
 import EquipmentSelect, { type Equipment } from "../molecules/EquipmentSelect";
 import SampleRateSlider from "../molecules/SampleRateSlider";
+import useLoadOptions from "../../hooks/useLoadOptions";
+import useGetGraphData from "../../hooks/useGetGraphData";
+import type { TimeseriesQueryParams } from "../../types";
 
 // Mock equipment and channels for the prototype
 // In production, these would come from API
@@ -45,6 +48,8 @@ export const FilterPanel: React.FC = () => {
   const filters = useFilters();
   const notification = useNotificationSlice();
   const state = filters.getState();
+  const { options } = useLoadOptions();
+  const { plot, loading: plotting } = useGetGraphData();
 
   const handleEquipmentChange = (equipmentId: string) => {
     filters.setEquipment(equipmentId);
@@ -96,6 +101,10 @@ export const FilterPanel: React.FC = () => {
     ...state.analogueChannels,
   ];
 
+  const equipmentList = options?.equipments ?? MOCK_EQUIPMENT;
+  const digitalChannels = options?.digitalChannels ?? MOCK_DIGITAL_CHANNELS;
+  const analogueChannels = options?.analogueChannels ?? MOCK_ANALOGUE_CHANNELS;
+
   /* istanbul ignore next */
   return (
     <Box sx={{ p: 2 }}>
@@ -103,11 +112,11 @@ export const FilterPanel: React.FC = () => {
         <EquipmentSelect
           value={state.equipmentId}
           onChange={handleEquipmentChange}
-          equipmentList={MOCK_EQUIPMENT}
+          equipmentList={equipmentList}
         />
         <ChannelSelect
           type="digital"
-          channels={MOCK_DIGITAL_CHANNELS}
+          channels={digitalChannels}
           selected={combinedSelected}
           onToggle={handleDigitalChannelToggle}
           onColorChange={handleColorChange}
@@ -116,7 +125,7 @@ export const FilterPanel: React.FC = () => {
         />
         <ChannelSelect
           type="analogue"
-          channels={MOCK_ANALOGUE_CHANNELS}
+          channels={analogueChannels}
           selected={combinedSelected}
           onToggle={handleAnalogueChannelToggle}
           onColorChange={handleColorChange}
@@ -129,11 +138,74 @@ export const FilterPanel: React.FC = () => {
           onChange={handleDateRangeChange}
           onError={handleDateRangeError}
         />
-          {/* istanbul ignore next */}
-          <SampleRateSlider
+        {/* istanbul ignore next */}
+        <SampleRateSlider
           value={state.sampleRate ?? 1}
           onChange={handleSampleRateChange}
         />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, pt: 1 }}>
+          {/** Disable the Plot button until required inputs are present */}
+          {/** required: equipment, dateRange, channels (1-8), sampleRate */}
+          {/* compute affordance for enabled state */}
+          {/* eslint-disable react/jsx-no-bind */}
+          <Button
+            data-testid="plot-button"
+            variant="contained"
+            onClick={async () => {
+              // keep defensive notifications for legacy behaviour
+              if (!state.equipmentId) {
+                notification.showNotification(
+                  "Select an equipment before plotting",
+                  "warning",
+                );
+                return;
+              }
+              if (!state.dateRange?.[0] || !state.dateRange?.[1]) {
+                notification.showNotification(
+                  "Select a valid date range before plotting",
+                  "warning",
+                );
+                return;
+              }
+              if (combinedSelected.length < 1) {
+                notification.showNotification(
+                  "Select at least one channel to plot",
+                  "warning",
+                );
+                return;
+              }
+              if (combinedSelected.length > 8) {
+                notification.showNotification(
+                  "A maximum of 8 channels can be plotted",
+                  "warning",
+                );
+                return;
+              }
+
+              const params: TimeseriesQueryParams = {
+                equipmentId: state.equipmentId,
+                channels: combinedSelected,
+                from: state.dateRange?.[0] ?? null,
+                to: state.dateRange?.[1] ?? null,
+                bucketSize: state.sampleRate ?? 1,
+              };
+
+              await plot(params);
+            }}
+            disabled={
+              plotting ||
+              !state.equipmentId ||
+              !state.dateRange?.[0] ||
+              !state.dateRange?.[1] ||
+              combinedSelected.length < 1 ||
+              combinedSelected.length > 8 ||
+              !(state.sampleRate ?? 1)
+            }
+          >
+            {plotting ? <CircularProgress size={18} /> : "Plot"}
+          </Button>
+          {/* eslint-enable react/jsx-no-bind */}
+        </Box>
       </Stack>
     </Box>
   );

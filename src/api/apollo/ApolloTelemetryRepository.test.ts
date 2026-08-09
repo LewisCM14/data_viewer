@@ -1,4 +1,12 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
+
+// Prevent network call by mocking the client used inside the repository
+vi.mock("./client", () => ({
+  createApolloClient: () => ({
+    query: vi.fn(async () => ({ data: {} })),
+  }),
+}));
+
 import ApolloTelemetryRepository from "./ApolloTelemetryRepository";
 
 describe("ApolloTelemetryRepository", () => {

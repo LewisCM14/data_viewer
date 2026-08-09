@@ -45,3 +45,5 @@ Thumbs.db
 # Misc
 .cache/
 .eslintcache
+docs/api
+sonar.md

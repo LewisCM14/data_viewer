@@ -3,6 +3,7 @@ import AppThemeProvider from "../../theme/AppThemeProvider";
 import FilterPanel from "../organisms/FilterPanel";
 import GraphCanvas from "../organisms/GraphCanvas";
 import PageLayout from "../templates/PageLayout";
+import useIFrameBridge from "../../hooks/useIFrameBridge";
 
 /**
  * DataViewerPage
@@ -12,6 +13,7 @@ import PageLayout from "../templates/PageLayout";
  * is the mounting point in `main.tsx`.
  */
 export const DataViewerPage: React.FC = () => {
+  useIFrameBridge();
   return (
     <AppThemeProvider>
       <PageLayout aside={<FilterPanel />}>

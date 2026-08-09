@@ -247,6 +247,8 @@ These lightweight practices ensure documentation remains part of the development
 ### Deliverables
 
 - `TelemetryRepository.ts` — `TimeseriesQueryParams`, `BucketedRecording`, `TelemetryRepository` interface
+ - `TelemetryRepository.ts` — `TimeseriesQueryParams`, `BucketedRecording`, `TelemetryRepository` interface
+ - `TelemetryRepository.getFilterOptions()` — new repository method (or adapter) to fetch the equipment catalogue and channel lists used to populate the filter panel on application load
 - `api/apollo/queries.ts` — `GET_BUCKETED_TELEMETRY` GQL document
 - `api/apollo/links/retryLink.ts` — `RetryLink` max 3 attempts, exponential backoff `2ⁿ × 100 ms + jitter`
 - `api/apollo/links/timeoutLink.ts` — `ApolloLink` that sets an `AbortController` per operation and rejects after `VITE_QUERY_TIMEOUT_MS` (default 30 000)
@@ -265,6 +267,7 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 ### TDD Order
 
 1. `TelemetryRepository.contract.test.ts` — `getTimeseries()` returns an array; each item has `channel`, `value`, `timestamp`; run against `MockTelemetryRepository` first (makes it pass immediately), then wire `ApolloTelemetryRepository` later in this stage
+1.a `TelemetryRepository.getFilterOptions.test.ts` — `getFilterOptions()` returns equipment list and channel catalog (`equipments: [{id,name}]`, `digitalChannels: string[]`, `analogueChannels: string[]`)
 2. `utils/normaliseChannel.test.ts` — `channel` field present → returns it; only `chanel` present → returns it; neither → returns `"unknown"`
 3. `api/apollo/links/retryLink.test.ts` — retries up to 3 times on network error; does not retry on 4xx; delay between attempt 1→2 < delay between attempt 2→3 (backoff)
 4. `api/apollo/links/timeoutLink.test.ts` — operation completing within timeout resolves; operation exceeding timeout rejects with `TimeoutError`
@@ -310,9 +313,11 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 **Molecules**:
 
 - `EquipmentSelect` — wraps `SelectField`; `required` indicator when value is `null`; passes selected equipment ID to `onChange`
+ - `EquipmentSelect` — wraps `SelectField`; `required` indicator when value is `null`; passes selected equipment ID to `onChange`. In the integrated app this component receives its options from the `useLoadOptions` hook (or props wired by `FilterPanel`).
 - `ChannelSelect` — receives `channels: Channel[]`, `selected: string[]`, `onToggle`, `colours: Record<string, string>`, `disabled: boolean`; renders one `Checkbox` + `ColorSwatch` row per channel; `disabled` prop disables all checkboxes; individual checkbox disabled when channel not in `selected` AND combined selected count is already 8
 - `DateRangePicker` — two `DatePicker` atoms; validates `from ≤ to`; emits `onError` when invalid
 - `SampleRateSlider` — `Slider` with `marks={[1,2,5,10,15,30].map(v => ({ value: v, label: String(v) }))}`; `step={null}` to snap to marks only
+- `useLoadOptions` hook — fetches the equipment list and channel catalog from `TelemetryRepository.getFilterOptions()` on application start and returns `{ loading, error, options, retry }`. `FilterPanel` will call this hook on mount and propagate options into `EquipmentSelect` and `ChannelSelect`.
 
 ### Validation Rules (tested at molecule level)
 
@@ -343,6 +348,7 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 10. `ChannelSelect.test.tsx` (analogue group) — same three tests as digital, with `type="analogue"` prop
 11. `DateRangePicker.test.tsx` — renders two date inputs labelled "From" and "To"; when `from < to`, `onError` is not called; when `from > to`, `onError` is called with an error message
 12. `SampleRateSlider.test.tsx` — slider marks equal `[1, 2, 5, 10, 15, 30]`; `step` prop is `null`; `onChange` is called with a mark value when the thumb is moved
+13. `useLoadOptions.test.ts` — when `getFilterOptions` resolves, options are returned; when it rejects, `error` is set and `retry` triggers another call
 
 ### Acceptance Criteria
 
@@ -406,6 +412,8 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 ### Deliverables
 
 - `FilterPanel` organism — reads `filterSlice` via `useFilters`; renders `EquipmentSelect`, `ChannelSelect` (digital), `ChannelSelect` (analogue), `DateRangePicker`, `SampleRateSlider`; dispatches store actions on change
+ - `FilterPanel` organism — reads `filterSlice` via `useFilters`; renders `EquipmentSelect`, `ChannelSelect` (digital), `ChannelSelect` (analogue), `DateRangePicker`, `SampleRateSlider`; dispatches store actions on change. It must also call `useLoadOptions` on mount to populate `EquipmentSelect` and `ChannelSelect` options.
+ - `Plot` action/button — `FilterPanel` exposes a `Plot` (or `Go`) button. The button is disabled until required fields are satisfied (single equipment, ≥1 and ≤8 combined channels, date range, sample rate — default 1 Hz). Pressing `Plot` invokes `useGetGraphData` (or a `plot()` method) which uses the Apollo cancel/AbortController link to cancel any in-flight query before starting the new one; the UI shows a loading state while the query runs.
 - `AppHeader` organism — renders app title; contains a "Favourites" icon button (wired in Stage 6); `data-testid="app-header"`
 - `AppFooter` organism — renders static footer text; `data-testid="app-footer"`
 - `NotificationSnackbar` organism (replaces Stage 0 stub) — reads `notificationSlice`; `anchorOrigin={{ vertical: "bottom", horizontal: "right" }}`; auto-hides after 6 000 ms; close button dispatches `dismissNotification`
@@ -421,6 +429,7 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 5. `organisms/FilterPanel.test.tsx` — changing the date range dispatches `setDateRange`; when `from > to`, dispatches `showNotification` instead
 6. `organisms/FilterPanel.test.tsx` — changing the sample rate dispatches `setSampleRate`
 7. `organisms/FilterPanel.test.tsx` — when combined `digitalChannels + analogueChannels` length equals 8, all unselected channel checkboxes are disabled
+7.a `organisms/FilterPanel.plot.test.tsx` — `Plot` button is disabled until required fields are present; when pressed it calls the plotting hook; pressing again cancels the prior request (verified by `MockTelemetryRepository.callCount`) and starts a new one; spinner shown when plotting
 8. `organisms/AppHeader.test.tsx` — renders `data-testid="app-header"` with the app title text
 9. `organisms/AppFooter.test.tsx` — renders `data-testid="app-footer"`
 10. `organisms/NotificationSnackbar.test.tsx` — renders closed when `open: false`; renders open with correct message when `showNotification` is dispatched
@@ -445,18 +454,15 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 
 ---
 
-## Stage 6 — URL Sharing, Favourites & iFrame Bridge
+## Stage 6 — URL Sharing & iFrame Bridge
 
-**Goal**: Implement and test the three cross-cutting features: shareable URLs, saved favourites, and the `postMessage` iFrame bridge.
+**Goal**: Implement and test the cross-cutting features: shareable URLs and the `postMessage` iFrame bridge. Favourites/bookmarks are handled by the user's browser via the URL.
 
 **Dependencies**: Stage 5 complete and approved.
 
 ### Deliverables
 
 - `usePersistentState` fully connected to the URL sync middleware (Stage 1 wired the middleware; this stage connects UI to it)
-- `FavouritesMenu` molecule — icon button that opens a `Menu`; each menu item is a saved favourite name; clicking an item calls `onRestore(snapshot)`; a "Save current" item at the top calls `onSave`
- - `FavouritesMenu` molecule — icon button that opens a `Menu`; provides `Copy URL` and `Restore from URL` helpers. The menu does not persist favourites to the store or localStorage; instead it helps the user copy or paste bookmarked URLs.
- - `AppHeader` updated — renders `FavouritesMenu` wired to URL helpers (no store-based favourites)
 - `hooks/useIFrameBridge.ts` — registers a `window` `"message"` event listener; handles `SET_FILTERS` by validating payload shape then dispatching `filterSlice` actions; sends `postMessage({ type: "FILTERS_APPLIED" })` to `event.source`; cleans up listener on unmount; ignores messages with unknown `type`; ignores messages with invalid `payload`
 - `DataViewerPage` updated — mounts `useIFrameBridge`
 
@@ -467,15 +473,11 @@ Both `MockTelemetryRepository` and `ApolloTelemetryRepository` must pass the sam
 3. `hooks/useIFrameBridge.test.ts` — `MessageEvent` with `type: "UNKNOWN"` does not update the store
 4. `hooks/useIFrameBridge.test.ts` — `MessageEvent` with a malformed `payload` (missing required fields) does not update the store and does not throw
 5. `hooks/useIFrameBridge.test.ts` — unmounting the hook removes the event listener (assert `window.removeEventListener` was called)
-6. `molecules/FavouritesMenu.test.tsx` — renders a trigger button; clicking it opens a menu
-7. `molecules/FavouritesMenu.test.tsx` — menu renders help text for copying/pasting URLs; clicking a menu item that represents a URL calls `onRestore(url)`
-8. `molecules/FavouritesMenu.test.tsx` — clicking "Copy URL" produces a URL string representing current filter state
-9. `organisms/AppHeader.test.tsx` — renders `FavouritesMenu`; clicking "Copy URL" calls the clipboard helper; pasting a saved URL into the restore UI dispatches filter hydration
 
 *URL round-trip (integration)*
 
-12. `store/middleware/urlSyncMiddleware.test.ts` — full round-trip: set complex filter state → read `window.location.search` → create new store, pass search string → resulting state equals original (all fields)
-13. `store/middleware/persistMiddleware.test.ts` — ensure no localStorage round-trip for favourites exists; instead, URL round-trip restores the same configuration when opened in a new tab
+6. `store/middleware/urlSyncMiddleware.test.ts` — full round-trip: set complex filter state → read `window.location.search` → create new store, pass search string → resulting state equals original (all fields)
+7. `store/middleware/persistMiddleware.test.ts` — ensure no localStorage round-trip for favourites exists; instead, URL round-trip restores the same configuration when opened in a new tab
 
 ### Acceptance Criteria
 

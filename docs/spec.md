@@ -7,6 +7,8 @@
 
 - Visualise telemetry data from equipment using interactive Plotly charts
 - Filter data by equipment (required, single select), digital channels, analogue channels, date range, and sample rate
+ - Retrieve filter options (equipment list, digital and analogue channel catalog) from the GraphQL API on application load. The filter panel must show loading placeholders while options are fetched and surface errors via the notification snackbar with a retry affordance.
+ - Provide an explicit "Plot" button in the `FilterPanel`. Plotting must execute only when the user presses `Plot`. The plotting action must use the Apollo client's cancellation mechanism (AbortController via the HttpLink) so each new `Plot` press cancels any in-flight query. The `Plot` button must be disabled until all required inputs are valid: a single `equipment` selected, at least one channel selected (combined digital + analogue ≥ 1 and ≤ 8), a date range, and a sample rate (defaults to 1 Hz).
 - Display digital and analogue channels in separate groups within the filter panel; each is a client-side searchable multi-select, combined cap of 8 channels, with per-channel colour mapping
 - Enforce a minimum of one selected channel from either group; cap the combined total at 8 channels
 - Assign a unique colour to each channel, reflected in the plot legend
@@ -126,6 +128,18 @@ interface BucketedRecording {
 
 interface TelemetryRepository {
     getTimeseries(params: TimeseriesQueryParams): Promise<BucketedRecording[]>;
+}
+
+interface FilterOptions {
+    equipments: { id: number; name: string }[];
+    digitalChannels: string[];
+    analogueChannels: string[];
+}
+
+interface TelemetryRepository {
+    getTimeseries(params: TimeseriesQueryParams): Promise<BucketedRecording[]>;
+    // Optionally fetch catalogues used to populate the filter panel on load
+    getFilterOptions?: () => Promise<FilterOptions>;
 }
 ```
 
@@ -403,7 +417,8 @@ Semantic token categories:
 | Hook / Utility | Responsibility | Resides In |
 |---|---|---|
 | `useFilters` | Read/write `filterSlice` from Zustand store | Zustand store |
-| `useGetGraphData` | Orchestrate `getTimeseriesQuery` via the repository; enforce `MAX_DATA_POINTS` | API layer hook |
+| `useLoadOptions` | Fetch equipment and channel catalog from `TelemetryRepository` on app load; returns `{ loading, error, options }` plus retry controls | API layer hook |
+| `useGetGraphData` | Invoked by the `Plot` button; orchestrates `getTimeseriesQuery` via the repository; enforces `MAX_DATA_POINTS`; uses Apollo cancellation (AbortController) to cancel prior in-flight queries when a new Plot is requested | API layer hook |
 | `getTimeseriesQuery` | Construct and execute the telemetry query via `TelemetryRepository` | API layer |
 | `getPlotData` | Transform `BucketedRecording[]` → Plotly `Data[]` with per-channel colour mapping | Utility |
 | `getLayout` | Derive Plotly `Layout` from current `filterSlice` state | Utility |

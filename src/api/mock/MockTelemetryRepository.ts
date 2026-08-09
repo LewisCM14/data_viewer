@@ -24,6 +24,11 @@ type MockRepoType = {
   simulateSlowResponse: boolean;
   callCount: number;
   getTimeseries(params?: TimeseriesQueryParams): Promise<BucketedRecording[]>;
+  getFilterOptions?: () => Promise<{
+    equipments: { id: string; name: string }[];
+    digitalChannels: { id: string; name: string; color: string }[];
+    analogueChannels: { id: string; name: string; color: string }[];
+  }>;
 };
 
 const MockTelemetryRepository: MockRepoType = {
@@ -67,6 +72,31 @@ const MockTelemetryRepository: MockRepoType = {
         params.signal.addEventListener("abort", onAbort, { once: true });
       }
     });
+  },
+  async getFilterOptions() {
+    // provide the same mock options previously embedded in FilterPanel
+    const equipments = [
+      { id: "eq1", name: "Equipment 1" },
+      { id: "eq2", name: "Equipment 2" },
+      { id: "eq3", name: "Equipment 3" },
+    ];
+
+    const digitalChannels = [
+      { id: "d1", name: "Digital 1", color: "#FF6384" },
+      { id: "d2", name: "Digital 2", color: "#36A2EB" },
+      { id: "d3", name: "Digital 3", color: "#FFCE56" },
+      { id: "d4", name: "Digital 4", color: "#4BC0C0" },
+      { id: "d5", name: "Digital 5", color: "#9966FF" },
+    ];
+
+    const analogueChannels = [
+      { id: "a1", name: "Analogue 1", color: "#FF9F40" },
+      { id: "a2", name: "Analogue 2", color: "#FF6384" },
+      { id: "a3", name: "Analogue 3", color: "#C9CBCF" },
+      { id: "a4", name: "Analogue 4", color: "#4BC0C0" },
+    ];
+
+    return Promise.resolve({ equipments, digitalChannels, analogueChannels });
   },
 };
 
