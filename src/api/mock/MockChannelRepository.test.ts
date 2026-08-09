@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { digitalLoadOptions, analogueLoadOptions } from "./MockChannelRepository";
+import {
+  digitalLoadOptions,
+  analogueLoadOptions,
+} from "./MockChannelRepository";
 
 describe("MockChannelRepository pagination", () => {
   test("digitalLoadOptions returns first page and hasMore when not exhausted", async () => {

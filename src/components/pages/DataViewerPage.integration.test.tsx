@@ -81,7 +81,7 @@ describe("DataViewerPage Integration", () => {
       setChannelColour: vi.fn(),
       resetFilters: vi.fn(),
       initialFilterState: initialState,
-    };
+    } as unknown as ReturnType<typeof useFilterSlice>;
   });
 
   test("mount DataViewerPage; simulate selecting equipment; simulate toggling one digital channel; assert plot-canvas renders with one trace", async () => {
@@ -91,10 +91,14 @@ describe("DataViewerPage Integration", () => {
 
     // Verify page renders
     expect(screen.getByTestId("app-header")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: /digital channels/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /digital channels/i }),
+    ).toBeInTheDocument();
 
     // Select equipment
-    const equipmentSelect = screen.getByRole("combobox", { name: /equipment/i });
+    const equipmentSelect = screen.getByRole("combobox", {
+      name: /equipment/i,
+    });
     await user.click(equipmentSelect);
 
     const equipmentOption = screen.getByRole("option", {
@@ -106,11 +110,15 @@ describe("DataViewerPage Integration", () => {
     expect(mockFilterState.setEquipment).toHaveBeenCalledWith("eq1");
 
     // Toggle a digital channel via the searchable dropdown
-    const digitalInput = screen.getByRole("combobox", { name: /digital channels/i });
+    const digitalInput = screen.getByRole("combobox", {
+      name: /digital channels/i,
+    });
     await user.click(digitalInput);
     await user.keyboard("{ArrowDown}");
 
-    const digitalOption = await screen.findByRole("option", { name: /digital 1/i });
+    const digitalOption = await screen.findByRole("option", {
+      name: /digital 1/i,
+    });
     await user.click(digitalOption);
 
     // Verify channel was toggled

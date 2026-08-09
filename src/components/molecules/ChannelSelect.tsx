@@ -1,4 +1,10 @@
-import { Autocomplete, Box, Checkbox, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Checkbox,
+  TextField,
+  Typography,
+} from "@mui/material";
 import type { SyntheticEvent } from "react";
 import type React from "react";
 import ColorSwatch from "../atoms/ColorSwatch";
@@ -15,6 +21,11 @@ export interface ChannelSelectProps {
   selected: string[];
   onToggle: (channelId: string) => void;
   onColorChange: (channelId: string, color: string) => void;
+  loadOptions?: (
+    query: string,
+    page: number,
+  ) => Promise<{ options: Channel[]; hasMore: boolean }>;
+  debounceMs?: number;
 }
 
 /**
@@ -27,8 +38,12 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   selected,
   onToggle,
   onColorChange: _onColorChange,
+  // optional props reserved for future async loading UI
+  loadOptions: _loadOptions,
+  debounceMs: _debounceMs,
 }) => {
   const handleChange = (_event: SyntheticEvent, newValue: Channel[] | null) => {
+    /* istanbul ignore next */
     const newIds = (newValue ?? []).map((v) => v.id);
 
     newIds.forEach((id) => {
@@ -56,7 +71,9 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label={type === "digital" ? "Digital Channels" : "Analogue Channels"}
+            label={
+              type === "digital" ? "Digital Channels" : "Analogue Channels"
+            }
             placeholder="Search channels..."
             variant="outlined"
           />

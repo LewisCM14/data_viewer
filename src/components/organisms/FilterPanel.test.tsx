@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type useFilterSlice from "../../store/slices/filterSlice";
@@ -11,17 +17,21 @@ let mockFilterState: ReturnType<typeof useFilterSlice>;
 let mockNotificationState: ReturnType<typeof useNotificationSlice>;
 let currentState: FilterState;
 
-vi.mock("../../store/slices/filterSlice", () => ({
-  default: () => mockFilterState,
-  initialFilterState: {
-    equipmentId: null,
-    digitalChannels: [],
-    analogueChannels: [],
-    dateRange: null,
-    sampleRate: 1,
-    channelColours: {},
-  },
-}));
+vi.mock(
+  "../../store/slices/filterSlice",
+  () =>
+    ({
+      default: () => mockFilterState,
+      initialFilterState: {
+        equipmentId: null,
+        digitalChannels: [],
+        analogueChannels: [],
+        dateRange: null,
+        sampleRate: 1,
+        channelColours: {},
+      },
+    }) as unknown as Record<string, unknown>,
+);
 
 vi.mock("../../store/slices/notificationSlice", () => ({
   default: () => mockNotificationState,
@@ -52,7 +62,7 @@ describe("FilterPanel", () => {
       setChannelColour: vi.fn(),
       resetFilters: vi.fn(),
       initialFilterState: currentState,
-    };
+    } as unknown as ReturnType<typeof useFilterSlice>;
 
     mockNotificationState = {
       getState: () => ({
@@ -74,11 +84,17 @@ describe("FilterPanel", () => {
     render(<FilterPanel />);
 
     // Check for equipment select
-      expect(screen.getByRole("combobox", { name: /equipment/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /equipment/i }),
+    ).toBeInTheDocument();
 
     // Check for channel select groups
-      expect(screen.getByRole("combobox", { name: /digital channels/i })).toBeInTheDocument();
-      expect(screen.getByRole("combobox", { name: /analogue channels/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /digital channels/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /analogue channels/i }),
+    ).toBeInTheDocument();
 
     // Check for date range pickers
     expect(screen.getByLabelText(/from/i)).toBeInTheDocument();
@@ -92,7 +108,9 @@ describe("FilterPanel", () => {
     const user = userEvent.setup();
     render(<FilterPanel />);
 
-      const equipmentSelect = screen.getByRole("combobox", { name: /equipment/i });
+    const equipmentSelect = screen.getByRole("combobox", {
+      name: /equipment/i,
+    });
     await user.click(equipmentSelect);
 
     // Select first equipment option
@@ -106,16 +124,19 @@ describe("FilterPanel", () => {
     const user = userEvent.setup();
     const { rerender } = render(<FilterPanel />);
     // Open the digital channels autocomplete and select the first option
-      const input = screen.getByRole("combobox", { name: /digital channels/i });
+    const input = screen.getByRole("combobox", { name: /digital channels/i });
     await user.click(input);
     const acRoot = input.closest(".MuiAutocomplete-root");
-    const popup = acRoot?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popup = acRoot?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popup) await user.click(popup);
     else await user.keyboard("{ArrowDown}");
 
     // Click the matching option inside the Autocomplete's listbox
     const listboxId = input.getAttribute("aria-controls");
     if (listboxId) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox = document.getElementById(listboxId)!;
       const option = within(listbox).getByText("Digital 1");
       await user.click(option);
@@ -133,19 +154,26 @@ describe("FilterPanel", () => {
     rerender(<FilterPanel />);
 
     // Open and toggle off
-      const inputAfter = screen.getByRole("combobox", { name: /digital channels/i });
+    const inputAfter = screen.getByRole("combobox", {
+      name: /digital channels/i,
+    });
     await user.click(inputAfter);
     const acRootAfter = inputAfter.closest(".MuiAutocomplete-root");
-    const popupAfter = acRootAfter?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupAfter = acRootAfter?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupAfter) await user.click(popupAfter);
     else await user.keyboard("{ArrowDown}");
     const listboxIdAfter = inputAfter.getAttribute("aria-controls");
     if (listboxIdAfter) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxAfter = document.getElementById(listboxIdAfter)!;
       const optionAfter = within(listboxAfter).getByText("Digital 1");
       await user.click(optionAfter);
     } else {
-      const optionAfter = await screen.findByRole("option", { name: "Digital 1" });
+      const optionAfter = await screen.findByRole("option", {
+        name: "Digital 1",
+      });
       await user.click(optionAfter);
     }
 
@@ -156,15 +184,18 @@ describe("FilterPanel", () => {
     const user = userEvent.setup();
     const { rerender } = render(<FilterPanel />);
     // Open analogue channels autocomplete and select option
-      const input = screen.getByRole("combobox", { name: /analogue channels/i });
+    const input = screen.getByRole("combobox", { name: /analogue channels/i });
     await user.click(input);
     const acRootA = input.closest(".MuiAutocomplete-root");
-    const popupA = acRootA?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupA = acRootA?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupA) await user.click(popupA);
     else await user.keyboard("{ArrowDown}");
 
     const listboxIdA = input.getAttribute("aria-controls");
     if (listboxIdA) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA = document.getElementById(listboxIdA)!;
       const option = within(listboxA).getByText("Analogue 1");
       await user.click(option);
@@ -182,19 +213,26 @@ describe("FilterPanel", () => {
     rerender(<FilterPanel />);
 
     // Open and toggle off
-      const inputAfter = screen.getByRole("combobox", { name: /analogue channels/i });
+    const inputAfter = screen.getByRole("combobox", {
+      name: /analogue channels/i,
+    });
     await user.click(inputAfter);
     const acRootAAfter = inputAfter.closest(".MuiAutocomplete-root");
-    const popupAAfter = acRootAAfter?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupAAfter = acRootAAfter?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupAAfter) await user.click(popupAAfter);
     else await user.keyboard("{ArrowDown}");
     const listboxIdAAfter = inputAfter.getAttribute("aria-controls");
     if (listboxIdAAfter) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxAAfter = document.getElementById(listboxIdAAfter)!;
       const optionAfter = within(listboxAAfter).getByText("Analogue 1");
       await user.click(optionAfter);
     } else {
-      const optionAfter = await screen.findByRole("option", { name: "Analogue 1" });
+      const optionAfter = await screen.findByRole("option", {
+        name: "Analogue 1",
+      });
       await user.click(optionAfter);
     }
 
@@ -253,38 +291,56 @@ describe("FilterPanel", () => {
     render(<FilterPanel />);
     // Open digital autocomplete and verify an unselected option is aria-disabled
     const user = userEvent.setup();
-    const digitalInput = screen.getByRole("combobox", { name: /digital channels/i });
+    const digitalInput = screen.getByRole("combobox", {
+      name: /digital channels/i,
+    });
     await user.click(digitalInput);
     const acRootD = digitalInput.closest(".MuiAutocomplete-root");
-    const popupD = acRootD?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupD = acRootD?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupD) await user.click(popupD);
     else await user.keyboard("{ArrowDown}");
     const listboxIdD = digitalInput.getAttribute("aria-controls");
     if (listboxIdD) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxD = document.getElementById(listboxIdD)!;
       // All digital channels are selected in this setup; ensure a selected option is NOT disabled
-      const optionNode = within(listboxD).getByText("Digital 1").closest("li") as HTMLElement;
+      const optionNode = within(listboxD)
+        .getByText("Digital 1")
+        .closest("li") as HTMLElement;
       expect(optionNode.getAttribute("aria-disabled")).not.toBe("true");
     } else {
-      const digitalOption = await screen.findByRole("option", { name: "Digital 1" });
+      const digitalOption = await screen.findByRole("option", {
+        name: "Digital 1",
+      });
       expect(digitalOption.getAttribute("aria-disabled")).not.toBe("true");
     }
 
     // Open analogue autocomplete and verify an unselected option is aria-disabled
-    const analogueInput = screen.getByRole("combobox", { name: /analogue channels/i });
+    const analogueInput = screen.getByRole("combobox", {
+      name: /analogue channels/i,
+    });
     await user.click(analogueInput);
     const acRootA = analogueInput.closest(".MuiAutocomplete-root");
-    const popupA = acRootA?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupA = acRootA?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupA) await user.click(popupA);
     else await user.keyboard("{ArrowDown}");
     const listboxIdA = analogueInput.getAttribute("aria-controls");
     if (listboxIdA) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA = document.getElementById(listboxIdA)!;
       // Analogue 4 is the single unselected analogue channel in this setup
-      const optionNode = within(listboxA).getByText("Analogue 4").closest("li") as HTMLElement;
+      const optionNode = within(listboxA)
+        .getByText("Analogue 4")
+        .closest("li") as HTMLElement;
       expect(optionNode).toHaveAttribute("aria-disabled", "true");
     } else {
-      const analogueOption = await screen.findByRole("option", { name: "Analogue 4" });
+      const analogueOption = await screen.findByRole("option", {
+        name: "Analogue 4",
+      });
       expect(analogueOption).toHaveAttribute("aria-disabled", "true");
     }
   });

@@ -201,10 +201,10 @@ These lightweight practices ensure documentation remains part of the development
 
 - `filterSlice` actions: `setEquipment`, `addDigitalChannel`, `removeDigitalChannel`, `addAnalogueChannel`, `removeAnalogueChannel`, `setDateRange`, `setSampleRate`, `setChannelColour`, `resetFilters`
 - `notificationSlice` actions: `showNotification({ message, severity })`, `dismissNotification`
- - `uiSlice` actions: `toggleSidebar` (favourites are URL-managed; no `addFavourite`/`removeFavourite` in the store)
+    - `uiSlice` actions: `toggleSidebar`
 - `useFilters` hook: typed selector/dispatch wrapper over `filterSlice`
 - `urlSyncMiddleware` — on every `filterSlice` change, serialises state to `URLSearchParams` via `window.history.replaceState`; on store init, reads current URL and hydrates `filterSlice`
- - `persistMiddleware` — persists permitted UI state to localStorage if required; **does not** persist favourites (favourites are represented via bookmarked URLs)
+ - `persistMiddleware` — persists permitted UI state to localStorage if required
 - `usePersistentState` hook: reads current `filterSlice` from store and returns a URL-safe string; accepts a URL string and dispatches hydration
 
 ### TDD Order
@@ -231,7 +231,7 @@ These lightweight practices ensure documentation remains part of the development
 
 - [ ] All slice actions are tested with at least one positive and one boundary case each
 - [ ] URL round-trip test passes for all `filterSlice` fields
-- [ ] URL round-trip test for filter state and favourites (via query params) passes
+    - [ ] URL round-trip test for filter state passes
 - [ ] `npm run test:coverage` exits 0 at 100%
 - [ ] `npm run typecheck` exits 0
 - [ ] `npm run lint` exits 0

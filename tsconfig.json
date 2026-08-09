@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "ignoreDeprecations": "6.0",
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": ["vitest", "vitest/globals", "@testing-library/jest-dom", "node"]
   },
   "include": ["src", "test"]
 }

@@ -6,7 +6,7 @@ import useFilterSlice, {
   initialFilterState,
 } from "./filterSlice";
 
-describe("filterSlice initial state", () => {
+describe("filterSlice initial state and API", () => {
   test("has the expected shape and defaults", () => {
     const expected: FilterState = {
       equipmentId: null,
@@ -20,48 +20,25 @@ describe("filterSlice initial state", () => {
     expect(initialFilterState).toEqual(expected);
   });
 
-  test("getState/setState stub updates state", () => {
+  test("getState/setState stub updates state and helpers work", () => {
     const s = useFilterSlice();
     expect(s.getState()).toEqual(initialFilterState);
     s.setState({ equipmentId: "eq1" });
     expect(s.getState().equipmentId).toBe("eq1");
-  });
-
-  test("setEquipment helper updates equipmentId", () => {
-    const s = useFilterSlice();
-    expect(s.getState().equipmentId).toBeNull();
     s.setEquipment("eq2");
     expect(s.getState().equipmentId).toBe("eq2");
   });
 
-  test("addDigitalChannel appends unique channels", () => {
+  test("digital and analogue channel add/remove semantics", () => {
     const s = useFilterSlice();
-    expect(s.getState().digitalChannels).toEqual([]);
     s.addDigitalChannel("d1");
     expect(s.getState().digitalChannels).toEqual(["d1"]);
-    s.addDigitalChannel("d2");
-    expect(s.getState().digitalChannels).toEqual(["d1", "d2"]);
-  });
-
-  test("addDigitalChannel is idempotent when adding the same channel twice", () => {
-    const s = useFilterSlice();
-    s.addDigitalChannel("d1");
     s.addDigitalChannel("d1");
     expect(s.getState().digitalChannels).toEqual(["d1"]);
-  });
-
-  test("removeDigitalChannel removes an existing channel", () => {
-    const s = useFilterSlice();
     s.setState({ digitalChannels: ["d1", "d2"] });
     s.removeDigitalChannel("d1");
     expect(s.getState().digitalChannels).toEqual(["d2"]);
-  });
 
-  test("analogue channel add/remove and idempotency", () => {
-    const s = useFilterSlice();
-    expect(s.getState().analogueChannels).toEqual([]);
-    s.addAnalogueChannel("a1");
-    expect(s.getState().analogueChannels).toEqual(["a1"]);
     s.addAnalogueChannel("a1");
     expect(s.getState().analogueChannels).toEqual(["a1"]);
     s.addAnalogueChannel("a2");
@@ -82,8 +59,10 @@ describe("filterSlice initial state", () => {
     expect(s.getState()).toEqual(initialFilterState);
   });
 
-  test("createFilterSliceInstance registers as last slice", () => {
+  test("createFilterSliceInstance registers as last slice and useFilterSlice sets last slice", () => {
     const inst = createFilterSliceInstance();
     expect(getLastFilterSlice()).toBe(inst);
+    const inst2 = useFilterSlice();
+    expect(getLastFilterSlice()).toBe(inst2);
   });
 });

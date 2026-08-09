@@ -9,7 +9,7 @@
 export function serialiseFiltersToSearch(params: Record<string, unknown>) {
   const sp = new URLSearchParams();
   Object.keys(params).forEach((k) => {
-    const v = params[k];
+    const v = params[k as keyof typeof params];
     if (v == null) return;
     if (Array.isArray(v)) {
       try {

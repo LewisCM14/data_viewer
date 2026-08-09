@@ -11,10 +11,7 @@
 - Enforce a minimum of one selected channel from either group; cap the combined total at 8 channels
 - Assign a unique colour to each channel, reflected in the plot legend
 - Enforce a configurable `MAX_DATA_POINTS` limit (env var, default 800,000) across all active channels
- - Allow users to share plot configuration via URL. Favourites are represented by
-     bookmarked URLs managed by the browser/user (copy/bookmark). The application
-     provides `Copy URL` and `Restore from URL` helpers but does not persist
-     favourites in localStorage or in-application stores.
+ - Allow users to share plot configuration via URL; the application updates the browser URL automatically as filters change so users can bookmark or share the current state.
 - Surface user notifications via MUI Snackbar anchored to the bottom-right corner
 - Support embedding within a parent application via iFrame
 - Deliver a high-fidelity interactive prototype based on this architecture and implementation plan

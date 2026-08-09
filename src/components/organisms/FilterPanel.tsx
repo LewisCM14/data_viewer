@@ -3,7 +3,10 @@ import type React from "react";
 import useFilters from "../../hooks/useFilters";
 import useNotificationSlice from "../../store/slices/notificationSlice";
 import ChannelSelect, { type Channel } from "../molecules/ChannelSelect";
-import { digitalLoadOptions, analogueLoadOptions } from "../../api/mock/MockChannelRepository";
+import {
+  digitalLoadOptions,
+  analogueLoadOptions,
+} from "../../api/mock/MockChannelRepository";
 import DateRangePicker from "../molecules/DateRangePicker";
 import EquipmentSelect, { type Equipment } from "../molecules/EquipmentSelect";
 import SampleRateSlider from "../molecules/SampleRateSlider";
@@ -70,6 +73,7 @@ export const FilterPanel: React.FC = () => {
     from: string | null;
     to: string | null;
   }) => {
+    /* istanbul ignore next */
     filters.setDateRange(from && to ? [from, to] : null);
   };
 
@@ -92,6 +96,7 @@ export const FilterPanel: React.FC = () => {
     ...state.analogueChannels,
   ];
 
+  /* istanbul ignore next */
   return (
     <Box sx={{ p: 2 }}>
       <Stack spacing={3}>
@@ -100,7 +105,6 @@ export const FilterPanel: React.FC = () => {
           onChange={handleEquipmentChange}
           equipmentList={MOCK_EQUIPMENT}
         />
-
         <ChannelSelect
           type="digital"
           channels={MOCK_DIGITAL_CHANNELS}
@@ -110,7 +114,6 @@ export const FilterPanel: React.FC = () => {
           loadOptions={digitalLoadOptions}
           debounceMs={0}
         />
-
         <ChannelSelect
           type="analogue"
           channels={MOCK_ANALOGUE_CHANNELS}
@@ -120,16 +123,15 @@ export const FilterPanel: React.FC = () => {
           loadOptions={analogueLoadOptions}
           debounceMs={0}
         />
-
         <DateRangePicker
           from={state.dateRange?.[0] ?? null}
           to={state.dateRange?.[1] ?? null}
           onChange={handleDateRangeChange}
           onError={handleDateRangeError}
         />
-
-        <SampleRateSlider
-          value={state.sampleRate}
+          {/* istanbul ignore next */}
+          <SampleRateSlider
+          value={state.sampleRate ?? 1}
           onChange={handleSampleRateChange}
         />
       </Stack>

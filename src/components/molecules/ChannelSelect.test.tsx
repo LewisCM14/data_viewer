@@ -25,20 +25,29 @@ describe("ChannelSelect - digital", () => {
     const input = screen.getByRole("combobox", { name: /digital channels/i });
     await user.click(input);
     const acRoot = input.closest(".MuiAutocomplete-root");
-    const popup = acRoot?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popup = acRoot?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popup) await user.click(popup);
     else await user.keyboard("{ArrowDown}");
 
     const listboxId = input.getAttribute("aria-controls");
     if (listboxId) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox = document.getElementById(listboxId)!;
       expect(within(listbox).getByText("Channel 1")).toBeInTheDocument();
       expect(within(listbox).getByText("Channel 2")).toBeInTheDocument();
       expect(within(listbox).getByText("Channel 3")).toBeInTheDocument();
     } else {
-      expect(await screen.findByRole("option", { name: "Channel 1" })).toBeInTheDocument();
-      expect(await screen.findByRole("option", { name: "Channel 2" })).toBeInTheDocument();
-      expect(await screen.findByRole("option", { name: "Channel 3" })).toBeInTheDocument();
+      expect(
+        await screen.findByRole("option", { name: "Channel 1" }),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByRole("option", { name: "Channel 2" }),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByRole("option", { name: "Channel 3" }),
+      ).toBeInTheDocument();
     }
   });
 
@@ -56,13 +65,16 @@ describe("ChannelSelect - digital", () => {
     const input = screen.getByRole("combobox", { name: /digital channels/i });
     await user.click(input);
     const acRoot = input.closest(".MuiAutocomplete-root");
-    const popup = acRoot?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popup = acRoot?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popup) await user.click(popup);
     else await user.keyboard("{ArrowDown}");
 
     // Each option should include a color swatch and an option checkbox
     const listboxId = input.getAttribute("aria-controls");
     if (listboxId) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox = document.getElementById(listboxId)!;
       const swatches = listbox.querySelectorAll('[data-testid="color-swatch"]');
       expect(swatches.length).toBe(3);
@@ -89,12 +101,15 @@ describe("ChannelSelect - digital", () => {
     const input = screen.getByRole("combobox", { name: /digital channels/i });
     await user.click(input);
     const acRoot = input.closest(".MuiAutocomplete-root");
-    const popup = acRoot?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popup = acRoot?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popup) await user.click(popup);
     else await user.keyboard("{ArrowDown}");
 
     const listboxId2 = input.getAttribute("aria-controls");
     if (listboxId2) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox2 = document.getElementById(listboxId2)!;
       const option2 = within(listbox2).getByText("Channel 2");
       await user.click(option2);
@@ -131,18 +146,27 @@ describe("ChannelSelect - digital", () => {
 
     const listboxId3 = input.getAttribute("aria-controls");
     if (listboxId3) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox3 = document.getElementById(listboxId3)!;
-      const option9 = within(listbox3).getByText("Channel 9").closest("li") as HTMLElement;
-      const option10 = within(listbox3).getByText("Channel 10").closest("li") as HTMLElement;
+      const option9 = within(listbox3)
+        .getByText("Channel 9")
+        .closest("li") as HTMLElement;
+      const option10 = within(listbox3)
+        .getByText("Channel 10")
+        .closest("li") as HTMLElement;
 
       expect(option9).toHaveAttribute("aria-disabled", "true");
       expect(option10).toHaveAttribute("aria-disabled", "true");
 
-      const option1 = within(listbox3).getByText("Channel 1").closest("li") as HTMLElement;
+      const option1 = within(listbox3)
+        .getByText("Channel 1")
+        .closest("li") as HTMLElement;
       expect(option1.getAttribute("aria-disabled")).not.toBe("true");
     } else {
       const option9 = await screen.findByRole("option", { name: "Channel 9" });
-      const option10 = await screen.findByRole("option", { name: "Channel 10" });
+      const option10 = await screen.findByRole("option", {
+        name: "Channel 10",
+      });
 
       expect(option9).toHaveAttribute("aria-disabled", "true");
       expect(option10).toHaveAttribute("aria-disabled", "true");
@@ -169,8 +193,11 @@ describe("ChannelSelect - digital", () => {
 
     const listboxId4 = input.getAttribute("aria-controls");
     if (listboxId4) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listbox4 = document.getElementById(listboxId4)!;
-      const option1 = within(listbox4).getByText("Channel 1").closest("li") as HTMLElement;
+      const option1 = within(listbox4)
+        .getByText("Channel 1")
+        .closest("li") as HTMLElement;
       expect(option1.getAttribute("aria-disabled")).not.toBe("true");
     } else {
       const option1 = await screen.findByRole("option", { name: "Channel 1" });
@@ -199,18 +226,25 @@ describe("ChannelSelect - analogue", () => {
     const input = screen.getByRole("combobox", { name: /analogue channels/i });
     await user.click(input);
     const acRootA = input.closest(".MuiAutocomplete-root");
-    const popupA = acRootA?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupA = acRootA?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupA) await user.click(popupA);
     else await user.keyboard("{ArrowDown}");
 
     const listboxIdA = input.getAttribute("aria-controls");
     if (listboxIdA) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA = document.getElementById(listboxIdA)!;
       expect(within(listboxA).getByText("Analogue 1")).toBeInTheDocument();
       expect(within(listboxA).getByText("Analogue 2")).toBeInTheDocument();
     } else {
-      expect(await screen.findByRole("option", { name: "Analogue 1" })).toBeInTheDocument();
-      expect(await screen.findByRole("option", { name: "Analogue 2" })).toBeInTheDocument();
+      expect(
+        await screen.findByRole("option", { name: "Analogue 1" }),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByRole("option", { name: "Analogue 2" }),
+      ).toBeInTheDocument();
     }
   });
 
@@ -228,14 +262,19 @@ describe("ChannelSelect - analogue", () => {
     const input = screen.getByRole("combobox", { name: /analogue channels/i });
     await user.click(input);
     const acRootA = input.closest(".MuiAutocomplete-root");
-    const popupA = acRootA?.querySelector('button[aria-label="Open"]') as HTMLElement | null;
+    const popupA = acRootA?.querySelector(
+      'button[aria-label="Open"]',
+    ) as HTMLElement | null;
     if (popupA) await user.click(popupA);
     else await user.keyboard("{ArrowDown}");
 
     const listboxIdA2 = input.getAttribute("aria-controls");
     if (listboxIdA2) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA2 = document.getElementById(listboxIdA2)!;
-      const swatches = listboxA2.querySelectorAll('[data-testid="color-swatch"]');
+      const swatches = listboxA2.querySelectorAll(
+        '[data-testid="color-swatch"]',
+      );
       expect(swatches.length).toBe(2);
     } else {
       const listbox = await screen.findByRole("listbox");
@@ -263,6 +302,7 @@ describe("ChannelSelect - analogue", () => {
 
     const listboxIdA3 = input.getAttribute("aria-controls");
     if (listboxIdA3) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA3 = document.getElementById(listboxIdA3)!;
       const option2 = within(listboxA3).getByText("Analogue 2");
       await user.click(option2);
@@ -308,15 +348,22 @@ describe("ChannelSelect - analogue", () => {
 
     const listboxIdA4 = input.getAttribute("aria-controls");
     if (listboxIdA4) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA4 = document.getElementById(listboxIdA4)!;
-      const option9 = within(listboxA4).getByText("Analogue 9").closest("li") as HTMLElement;
-      const option10 = within(listboxA4).getByText("Analogue 10").closest("li") as HTMLElement;
+      const option9 = within(listboxA4)
+        .getByText("Analogue 9")
+        .closest("li") as HTMLElement;
+      const option10 = within(listboxA4)
+        .getByText("Analogue 10")
+        .closest("li") as HTMLElement;
 
       expect(option9).toHaveAttribute("aria-disabled", "true");
       expect(option10).toHaveAttribute("aria-disabled", "true");
     } else {
       const option9 = await screen.findByRole("option", { name: "Analogue 9" });
-      const option10 = await screen.findByRole("option", { name: "Analogue 10" });
+      const option10 = await screen.findByRole("option", {
+        name: "Analogue 10",
+      });
 
       expect(option9).toHaveAttribute("aria-disabled", "true");
       expect(option10).toHaveAttribute("aria-disabled", "true");
@@ -340,8 +387,11 @@ describe("ChannelSelect - analogue", () => {
 
     const listboxIdA5 = input.getAttribute("aria-controls");
     if (listboxIdA5) {
+      // biome-ignore lint/style/noNonNullAssertion: test asserts DOM presence before use
       const listboxA5 = document.getElementById(listboxIdA5)!;
-      const option1 = within(listboxA5).getByText("Analogue 1").closest("li") as HTMLElement;
+      const option1 = within(listboxA5)
+        .getByText("Analogue 1")
+        .closest("li") as HTMLElement;
       expect(option1.getAttribute("aria-disabled")).not.toBe("true");
     } else {
       const option1 = await screen.findByRole("option", { name: "Analogue 1" });

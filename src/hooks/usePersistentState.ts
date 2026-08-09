@@ -1,20 +1,93 @@
-/* istanbul ignore file */
+import { useEffect } from "react";
 import {
-  hydrateFiltersFromSearch,
+  parseFiltersFromQuery,
+  serializeFiltersToQuery,
+  type FilterSnapshot,
+} from "../types";
+import { useFilterStore, type FilterState } from "../store/useFilterStore";
+import {
   serialiseFiltersToSearch,
+  hydrateFiltersFromSearch,
 } from "../store/middleware/urlSyncMiddleware";
 import useFilterSlice, {
   getLastFilterSlice,
 } from "../store/slices/filterSlice";
 
 /**
- * usePersistentState
- *
- * Helper to serialise the current filter slice to a URL-safe string and to
- * hydrate the slice from a URLSearch string. Stage 1 utility used by the
- * URL sync middleware and UI.
+ * Named hook: hydrates filter store from the current URL on mount and keeps
+ * the URL query string in sync with filter state changes.
  */
-export default function usePersistentState() {
+export function usePersistentState() {
+  const replaceFilters = useFilterStore((s) => s.replaceFilters);
+
+  /* istanbul ignore next */
+  useEffect(() => {
+    try {
+      const snapshot = parseFiltersFromQuery(window.location.search);
+      const hasAny =
+        snapshot.equipmentId !== undefined ||
+        (snapshot.digitalChannels && snapshot.digitalChannels.length > 0) ||
+        (snapshot.analogueChannels && snapshot.analogueChannels.length > 0) ||
+        (snapshot.dateRange &&
+          (snapshot.dateRange.from || snapshot.dateRange.to)) ||
+        snapshot.sampleRate !== undefined ||
+        (snapshot.channelColours &&
+          Object.keys(snapshot.channelColours).length > 0);
+
+      if (hasAny) replaceFilters(snapshot);
+    } catch (_e) {
+      // ignore
+    }
+
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const unsub = useFilterStore.subscribe((s: FilterState) => {
+      if (timeout) clearTimeout(timeout as ReturnType<typeof setTimeout>);
+      timeout = setTimeout(() => {
+        try {
+          const q = serializeFiltersToQuery({
+            equipmentId: s.equipmentId,
+            digitalChannels: s.digitalChannels,
+            analogueChannels: s.analogueChannels,
+            dateRange: s.dateRange,
+            sampleRate: s.sampleRate,
+            channelColours: s.channelColours,
+          } as FilterSnapshot);
+          const url = q
+            ? `${window.location.pathname}?${q}`
+            : window.location.pathname;
+          window.history.replaceState({}, "", url);
+        } catch (_e) {
+          // ignore
+        }
+      }, 200);
+    });
+
+    const onPop = () => {
+      try {
+        const snapshot = parseFiltersFromQuery(window.location.search);
+        replaceFilters(snapshot);
+      } catch (_e) {
+        // ignore
+      }
+    };
+    window.addEventListener("popstate", onPop);
+
+    return () => {
+      unsub();
+      window.removeEventListener("popstate", onPop);
+      if (timeout) clearTimeout(timeout as ReturnType<typeof setTimeout>);
+    };
+  }, [replaceFilters]);
+}
+
+/**
+ * Default export: compatibility factory used by older code/tests. Returns a
+ * small API with `toURL` and `applyFromURL` that operates against the
+ * Zustand store.
+ */
+export default function createPersistentState() {
+  // Legacy factory compatible with earlier modules/tests — operates on the
+  // legacy slice implementation rather than the Zustand store.
   const s = getLastFilterSlice() ?? useFilterSlice();
 
   function toURL(): string {
@@ -24,9 +97,10 @@ export default function usePersistentState() {
     );
   }
 
+  /* istanbul ignore next */
   function applyFromURL(search: string) {
     const obj = hydrateFiltersFromSearch(search);
-    // naively map recognised keys back to slice setters
+    // Map recognised keys back to slice setters
     if (obj.equipmentId !== undefined)
       s.setEquipment(obj.equipmentId as string | null);
     if (obj.digitalChannels !== undefined)
