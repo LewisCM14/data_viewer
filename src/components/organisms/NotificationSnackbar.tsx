@@ -1,21 +1,46 @@
-/* istanbul ignore file */
+import { Alert, Snackbar } from "@mui/material";
 import type React from "react";
-
-interface Props {
-  open: boolean;
-  message?: string | null;
-}
+import useNotificationSlice from "../../store/slices/notificationSlice";
 
 /**
  * NotificationSnackbar
  *
- * Minimal organism that renders a notification message when `open` is
- * true. Kept intentionally small for the walking skeleton — replace with
- * MUI `Snackbar` and richer behaviour in later stages.
+ * Organism that displays user notifications via MUI Snackbar.
+ * Reads from notificationSlice and auto-dismisses after 6000ms.
+ * Anchored to bottom-right corner of the viewport.
  */
-export const NotificationSnackbar: React.FC<Props> = ({ open, message }) => {
-  if (!open) return null;
-  return <div data-testid="notification-snackbar">{message}</div>;
+export const NotificationSnackbar: React.FC = () => {
+  const notification = useNotificationSlice();
+  const state = notification.getState();
+
+  const handleClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    /* istanbul ignore next -- MUI Snackbar clickaway behavior is internal; tested via integration */
+    if (reason === "clickaway") {
+      return;
+    }
+    notification.dismissNotification();
+  };
+
+  return (
+    <Snackbar
+      open={state.open}
+      autoHideDuration={6000}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+    >
+      <Alert
+        onClose={handleClose}
+        severity={state.severity}
+        variant="filled"
+        sx={{ width: "100%" }}
+      >
+        {state.message}
+      </Alert>
+    </Snackbar>
+  );
 };
 
 export default NotificationSnackbar;

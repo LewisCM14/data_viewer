@@ -7,7 +7,7 @@
 
 - Visualise telemetry data from equipment using interactive Plotly charts
 - Filter data by equipment (required, single select), digital channels, analogue channels, date range, and sample rate
-- Display digital and analogue channels in separate groups within the filter panel
+- Display digital and analogue channels in separate groups within the filter panel; each is a client-side searchable multi-select, combined cap of 8 channels, with per-channel colour mapping
 - Enforce a minimum of one selected channel from either group; cap the combined total at 8 channels
 - Assign a unique colour to each channel, reflected in the plot legend
 - Enforce a configurable `MAX_DATA_POINTS` limit (env var, default 800,000) across all active channels
@@ -357,7 +357,7 @@ flowchart TD
 | Component | Purpose |
 |---|---|
 | `EquipmentSelect` | Required single-select equipment dropdown; blocks query until populated |
-| `ChannelSelect` | Digital or analogue channel list; enforces 8-channel combined cap; assigns colours |
+| `ChannelSelect` | Client-side searchable multi-select for digital or analogue channels; enforces combined 8-channel cap and shows a colour indicator per selected channel |
 | `DateRangePicker` | From / to pair of `DatePicker` atoms with start ≤ end validation |
 | `SampleRateSlider` | `Slider` restricted to marks: `1, 2, 5, 10, 15, 30` |
 | `PlotContainer` | Full-height responsive Plotly chart with colour-keyed legend |

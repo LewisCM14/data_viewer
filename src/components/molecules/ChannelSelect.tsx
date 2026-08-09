@@ -1,6 +1,6 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Autocomplete, Box, Checkbox, TextField, Typography } from "@mui/material";
+import type { SyntheticEvent } from "react";
 import type React from "react";
-import Checkbox from "../atoms/Checkbox";
 import ColorSwatch from "../atoms/ColorSwatch";
 
 export interface Channel {
@@ -18,12 +18,8 @@ export interface ChannelSelectProps {
 }
 
 /**
- * ChannelSelect
- *
- * Molecule for selecting digital or analogue channels with validation:
- * - Min 1 channel must be selected (last selected checkbox is not disabled)
- * - Max 8 combined channels (unselected checkboxes disabled when limit reached)
- * - Each row shows Checkbox + ColorSwatch for visual channel identification
+ * Searchable multi-select for digital or analogue channels.
+ * Disables unselected options once 8 channels are combined across both groups.
  */
 export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   type,
@@ -32,44 +28,54 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   onToggle,
   onColorChange: _onColorChange,
 }) => {
-  const isAtCapacity = selected.length >= 8;
+  const handleChange = (_event: SyntheticEvent, newValue: Channel[] | null) => {
+    const newIds = (newValue ?? []).map((v) => v.id);
 
-  const handleToggle = (channelId: string, _checked: boolean) => {
-    onToggle(channelId);
+    newIds.forEach((id) => {
+      if (!selected.includes(id)) onToggle(id);
+    });
+    selected.forEach((id) => {
+      if (!newIds.includes(id)) onToggle(id);
+    });
   };
+
+  const getOptionDisabled = (option: Channel) =>
+    !selected.includes(option.id) && selected.length >= 8;
 
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom>
-        {type === "digital" ? "Digital Channels" : "Analogue Channels"}
-      </Typography>
-      <Stack spacing={1}>
-        {channels.map((channel) => {
-          const isSelected = selected.includes(channel.id);
-          // Disable unselected checkboxes when at 8-channel capacity
-          // Selected checkboxes are never disabled (allows unchecking even if it's the last one)
-          const isDisabled = !isSelected && isAtCapacity;
-
-          return (
-            <Box
-              key={channel.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Checkbox
-                label={channel.name}
-                checked={isSelected}
-                onChange={(checked) => handleToggle(channel.id, checked)}
-                disabled={isDisabled}
-              />
-              <ColorSwatch color={channel.color} />
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        options={channels}
+        getOptionLabel={(opt) => opt.name}
+        isOptionEqualToValue={(o, v) => o.id === v.id}
+        value={channels.filter((o) => selected.includes(o.id))}
+        onChange={handleChange}
+        getOptionDisabled={getOptionDisabled}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={type === "digital" ? "Digital Channels" : "Analogue Channels"}
+            placeholder="Search channels..."
+            variant="outlined"
+          />
+        )}
+        renderOption={(props, option, { selected: optionSelected }) => (
+          <li {...props} key={option.id}>
+            <Checkbox
+              tabIndex={-1}
+              checked={optionSelected}
+              disabled={getOptionDisabled(option)}
+              inputProps={{ "aria-label": option.name }}
+            />
+            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+              <ColorSwatch color={option.color} />
+              <Typography>{option.name}</Typography>
             </Box>
-          );
-        })}
-      </Stack>
+          </li>
+        )}
+      />
     </Box>
   );
 };

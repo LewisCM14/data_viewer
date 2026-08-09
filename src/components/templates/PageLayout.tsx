@@ -1,50 +1,67 @@
+import { Box } from "@mui/material";
 import type React from "react";
+import AppFooter from "../organisms/AppFooter";
+import AppHeader from "../organisms/AppHeader";
+import NotificationSnackbar from "../organisms/NotificationSnackbar";
+
+export interface PageLayoutProps {
+  aside: React.ReactNode;
+  children: React.ReactNode;
+}
 
 /**
  * PageLayout template
  *
- * Provides a simple page shell used by pages in the app. Tests rely on
- * the landmark regions (`header`, `aside`, `main`, `footer`) being present.
+ * Provides the application shell with header, aside (20%), main (80%),
+ * footer, and notification snackbar. Composes all major organisms into
+ * the full-page layout structure.
  */
-export const PageLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const PageLayout: React.FC<PageLayoutProps> = ({ aside, children }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <header
-        data-testid="header"
-        style={{ padding: "1rem", borderBottom: "1px solid #ccc" }}
-      >
-        Header
-      </header>
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        <aside
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+      }}
+    >
+      <AppHeader />
+
+      <Box sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <Box
+          component="aside"
           data-testid="aside"
-          style={{
+          sx={{
             width: "20%",
             padding: "1rem",
-            borderRight: "1px solid #ccc",
+            borderRight: "1px solid",
+            borderColor: "divider",
+            overflowY: "auto",
           }}
         >
-          Aside
-        </aside>
-        <main
+          {aside}
+        </Box>
+
+        <Box
+          component="main"
           data-testid="main"
-          style={{
+          sx={{
             width: "80%",
             padding: "1rem",
             display: "flex",
             flexDirection: "column",
+            overflowY: "auto",
           }}
         >
           {children}
-        </main>
-      </div>
-      <footer
-        data-testid="footer"
-        style={{ padding: "1rem", borderTop: "1px solid #ccc" }}
-      >
-        Footer
-      </footer>
-    </div>
+        </Box>
+      </Box>
+
+      <AppFooter />
+
+      {/* NotificationSnackbar rendered outside the flex row */}
+      <NotificationSnackbar />
+    </Box>
   );
 };
 

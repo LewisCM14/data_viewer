@@ -14,3 +14,57 @@ vi.mock("react-plotly.js", () => ({
     }),
   ),
 }));
+
+// Mock react-transition-group to avoid async transition warnings in tests.
+vi.mock("react-transition-group", () => {
+  const React = require("react");
+  return {
+    TransitionGroup: (props: any) => React.createElement(React.Fragment, null, props.children),
+    CSSTransition: (props: any) => React.createElement(React.Fragment, null, props.children),
+    Transition: (props: any) => React.createElement(React.Fragment, null, props.children),
+  };
+});
+
+// Also mock common deep import entry points used by some libraries (cjs/esm paths)
+vi.mock("react-transition-group/TransitionGroup", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+vi.mock("react-transition-group/CSSTransition", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+vi.mock("react-transition-group/Transition", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+vi.mock("react-transition-group/cjs/TransitionGroup", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+vi.mock("react-transition-group/cjs/CSSTransition", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+vi.mock("react-transition-group/cjs/Transition", () => {
+  const React = require("react");
+  return { default: (props: any) => React.createElement(React.Fragment, null, props.children) };
+});
+
+// Quiet specific React testing warnings about transitions not wrapped in act(...)
+const _consoleError = console.error;
+console.error = (...args: any[]) => {
+  try {
+    const msg = args[0];
+    if (typeof msg === "string" && msg.includes("not wrapped in act(")) return;
+    if (msg && msg.message && typeof msg.message === "string" && msg.message.includes("not wrapped in act(")) return;
+  } catch (e) {
+    // ignore
+  }
+  _consoleError(...args);
+};
