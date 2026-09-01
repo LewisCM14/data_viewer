@@ -1,5 +1,5 @@
-import { ApolloLink, Observable } from "@apollo/client";
-import type { FetchResult } from "@apollo/client";
+import { ApolloLink, Observable, type Operation } from "@apollo/client";
+import type { FormattedExecutionResult } from "graphql";
 
 /**
  * retryLink
@@ -9,30 +9,30 @@ import type { FetchResult } from "@apollo/client";
  * unit testing the behaviour contract.
  */
 
+type LinkResult = FormattedExecutionResult<
+  Record<string, unknown>,
+  Record<string, unknown>
+>;
+
+// NextLink is the forwarding function type from Apollo's link chain
+type NextLinkFunction = (operation: Operation) => Observable<LinkResult>;
+
 export function retryLink({ maxAttempts = 3, baseDelay = 100 } = {}) {
   // Helper moved outside the Observable below to reduce nested function
   // depth inside the main callback (satisfies Sonar's nesting rule).
   function subscribeOnceExternal(
-    forward: ApolloLink["request"] | undefined,
-    operation: Parameters<NonNullable<ApolloLink["request"]>>[0] | undefined,
+    forward: NextLinkFunction,
+    operation: Operation,
     observer: {
-      next: (v: FetchResult) => void;
+      next: (v: LinkResult) => void;
       error?: (e: unknown) => void;
       complete?: () => void;
     },
   ): { promise: Promise<void>; unsubscribe: () => void } {
-    if (!forward)
-      return { promise: Promise.resolve(), unsubscribe: () => undefined };
-
     let sub: { unsubscribe: () => void } | null = null;
     const promise = new Promise<void>((resolve, reject) => {
-      // `forward` expects a GraphQLRequest; we cast narrowly to satisfy types.
-      sub = forward(
-        operation as unknown as Parameters<
-          NonNullable<ApolloLink["request"]>
-        >[0],
-      ).subscribe({
-        next: (value: FetchResult) => observer.next(value),
+      sub = forward(operation).subscribe({
+        next: (value: LinkResult) => observer.next(value),
         error: (err: unknown) => reject(err),
         complete: () => resolve(),
       });
@@ -42,9 +42,9 @@ export function retryLink({ maxAttempts = 3, baseDelay = 100 } = {}) {
   }
 
   async function runRetry(
-    forward: ApolloLink["request"] | undefined,
-    operation: Parameters<NonNullable<ApolloLink["request"]>>[0] | undefined,
-    observer: { next: (v: FetchResult) => void; error: (e: unknown) => void },
+    forward: NextLinkFunction,
+    operation: Operation,
+    observer: { next: (v: LinkResult) => void; error: (e: unknown) => void },
     cancelToken: { cancelled: boolean },
     setActiveUnsub?: (fn: (() => void) | null) => void,
   ): Promise<void> {
@@ -78,7 +78,7 @@ export function retryLink({ maxAttempts = 3, baseDelay = 100 } = {}) {
   }
 
   return new ApolloLink((operation, forward) => {
-    return new Observable<FetchResult>((observer) => {
+    return new Observable<LinkResult>((observer) => {
       const cancelToken = { cancelled: false };
 
       // Kick off the retry loop outside of deeply nested anonymous functions

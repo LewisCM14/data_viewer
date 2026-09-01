@@ -2,6 +2,27 @@ import { ApolloLink, Observable } from "@apollo/client";
 import type { GraphQLError, FormattedExecutionResult } from "graphql";
 import useNotificationSlice from "../../../store/slices/notificationSlice";
 
+/**
+ * Observer interface for handling Observable subscription events.
+ */
+interface Observer<T> {
+  next(value: T): void;
+  error(error: unknown): void;
+  complete(): void;
+}
+
+/**
+ * Safely converts a value to a string, handling circular references, functions, and errors.
+ *
+ * @param value - The value to stringify
+ * @returns A safe string representation of the value
+ *
+ * @example
+ * ```ts
+ * safeStringify(new Error("Test")) // => "Test"
+ * safeStringify({ a: 1, fn: () => {} }) // => '{"a":1,"fn":"[Function: fn]"}'
+ * ```
+ */
 function safeStringify(value: unknown): string {
   if (!value) return String(value);
   if (value instanceof Error) return value.message;
@@ -30,10 +51,54 @@ function safeStringify(value: unknown): string {
   }
 }
 
+/**
+ * Creates an Apollo Link that observes responses and reports GraphQL and network errors
+ * via the notification slice, providing centralized error handling for all GraphQL operations.
+ *
+ * @returns An ApolloLink instance that intercepts responses and reports errors
+ *
+ * @example
+ * ```ts
+ * const errorLink = errorLink();
+ * const client = new ApolloClient({
+ *   link: ApolloLink.from([errorLink, httpLink]),
+ *   cache: new InMemoryCache(),
+ * });
+ * ```
+ */
 export function errorLink() {
   // Note: returns an ApolloLink that observes responses and reports
   // GraphQL and network errors via the notification slice.
   const notifier = useNotificationSlice();
+
+  // Handle successful responses and GraphQL errors
+  function handleResponseData(
+    result: FormattedExecutionResult<
+      Record<string, unknown>,
+      Record<string, unknown>
+    >,
+    observer: Observer<
+      FormattedExecutionResult<Record<string, unknown>, Record<string, unknown>>
+    >,
+  ): void {
+    const graphQLErrors = result?.errors as GraphQLError[] | undefined;
+    if (Array.isArray(graphQLErrors) && graphQLErrors.length > 0) {
+      const msgs = graphQLErrors.map((err) => err.message).join(", ");
+      notifier.showNotification(msgs, "error");
+    }
+    observer.next(result);
+  }
+
+  // Handle network errors
+  function handleNetworkError(
+    networkError: unknown,
+    observer: Observer<
+      FormattedExecutionResult<Record<string, unknown>, Record<string, unknown>>
+    >,
+  ): void {
+    notifier.showNotification(safeStringify(networkError), "error");
+    observer.error(networkError);
+  }
 
   function createErrorReportingObservable(
     sourceObs: Observable<
@@ -48,23 +113,8 @@ export function errorLink() {
       FormattedExecutionResult<Record<string, unknown>, Record<string, unknown>>
     >((observer) => {
       const sub = sourceObs.subscribe({
-        next: (result) => {
-          const graphQLErrors = result?.errors as GraphQLError[] | undefined;
-          if (Array.isArray(graphQLErrors) && graphQLErrors.length > 0) {
-            const msgs = graphQLErrors.map((err) => err.message).join(", ");
-            notifier.showNotification(msgs, "error");
-          }
-          observer.next(
-            result as FormattedExecutionResult<
-              Record<string, unknown>,
-              Record<string, unknown>
-            >,
-          );
-        },
-        error: (networkError) => {
-          notifier.showNotification(safeStringify(networkError), "error");
-          observer.error(networkError);
-        },
+        next: (result) => handleResponseData(result, observer),
+        error: (networkError) => handleNetworkError(networkError, observer),
         complete: () => observer.complete(),
       });
 
