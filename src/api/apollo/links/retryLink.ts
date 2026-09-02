@@ -1,4 +1,4 @@
-import { ApolloLink, Observable, type Operation } from "@apollo/client";
+import { ApolloLink, Observable } from "@apollo/client";
 import type { FormattedExecutionResult } from "graphql";
 
 /**
@@ -15,77 +15,85 @@ type LinkResult = FormattedExecutionResult<
 >;
 
 // NextLink is the forwarding function type from Apollo's link chain
-type NextLinkFunction = (operation: Operation) => Observable<LinkResult>;
+type NextLink = (operation: unknown) => Observable<LinkResult>;
 
-export function retryLink({ maxAttempts = 3, baseDelay = 100 } = {}) {
-  // Helper moved outside the Observable below to reduce nested function
-  // depth inside the main callback (satisfies Sonar's nesting rule).
-  function subscribeOnceExternal(
-    forward: NextLinkFunction,
-    operation: Operation,
-    observer: {
-      next: (v: LinkResult) => void;
-      error?: (e: unknown) => void;
-      complete?: () => void;
-    },
-  ): { promise: Promise<void>; unsubscribe: () => void } {
-    let sub: { unsubscribe: () => void } | null = null;
-    const promise = new Promise<void>((resolve, reject) => {
-      sub = forward(operation).subscribe({
-        next: (value: LinkResult) => observer.next(value),
-        error: (err: unknown) => reject(err),
-        complete: () => resolve(),
-      });
+function subscribeOnceExternal(
+  forward: NextLink,
+  operation: unknown,
+  observer: {
+    next: (v: LinkResult) => void;
+    error?: (e: unknown) => void;
+    complete?: () => void;
+  },
+): { promise: Promise<void>; unsubscribe: () => void } {
+  let sub: { unsubscribe: () => void } | null = null;
+  const promise = new Promise<void>((resolve, reject) => {
+    sub = forward(operation).subscribe({
+      next: (value: LinkResult) => observer.next(value),
+      error: (err: unknown) => reject(err),
+      complete: () => resolve(),
     });
+  });
 
-    return { promise, unsubscribe: () => sub?.unsubscribe() };
-  }
+  return { promise, unsubscribe: () => sub?.unsubscribe() };
+}
 
-  async function runRetry(
-    forward: NextLinkFunction,
-    operation: Operation,
-    observer: { next: (v: LinkResult) => void; error: (e: unknown) => void },
-    cancelToken: { cancelled: boolean },
-    setActiveUnsub?: (fn: (() => void) | null) => void,
-  ): Promise<void> {
-    let attempts = 0;
+async function runRetry(
+  forward: NextLink,
+  operation: unknown,
+  observer: { next: (v: LinkResult) => void; error: (e: unknown) => void },
+  baseDelay: number,
+  maxAttempts: number,
+  cancelToken: { cancelled: boolean },
+  setActiveUnsub?: (fn: (() => void) | null) => void,
+): Promise<void> {
+  let attempts = 0;
 
-    const delayMs = (attempt: number) =>
-      2 ** (attempt - 1) * baseDelay + Math.random() * 20;
+  const delayMs = (attempt: number) =>
+    2 ** (attempt - 1) * baseDelay + Math.random() * 20;
 
-    while (!cancelToken.cancelled) {
-      attempts += 1;
-      const { promise, unsubscribe } = subscribeOnceExternal(
-        forward,
-        operation,
-        observer,
-      );
-      setActiveUnsub?.(unsubscribe);
-      try {
-        // wait for the subscription to complete or fail
-        await promise;
-        return; // success
-      } catch (err) {
-        if (attempts >= maxAttempts) {
-          observer.error(err);
-          return;
-        }
-        await new Promise((res) => setTimeout(res, delayMs(attempts)));
-        setActiveUnsub?.(null);
-        // try again
+  while (!cancelToken.cancelled) {
+    attempts += 1;
+    const { promise, unsubscribe } = subscribeOnceExternal(
+      forward,
+      operation,
+      observer,
+    );
+    setActiveUnsub?.(unsubscribe);
+    try {
+      // wait for the subscription to complete or fail
+      await promise;
+      return; // success
+    } catch (err) {
+      if (attempts >= maxAttempts) {
+        observer.error(err);
+        return;
       }
+      await new Promise((res) => setTimeout(res, delayMs(attempts)));
+      setActiveUnsub?.(null);
+      // try again
     }
   }
+}
 
+export function retryLink({ maxAttempts = 3, baseDelay = 100 } = {}) {
   return new ApolloLink((operation, forward) => {
     return new Observable<LinkResult>((observer) => {
       const cancelToken = { cancelled: false };
 
       // Kick off the retry loop outside of deeply nested anonymous functions
       let activeUnsub: (() => void) | null = null;
-      void runRetry(forward, operation, observer, cancelToken, (fn) => {
-        activeUnsub = fn;
-      }).then(() => {
+      void runRetry(
+        forward as NextLink,
+        operation,
+        observer,
+        baseDelay,
+        maxAttempts,
+        cancelToken,
+        (fn) => {
+          activeUnsub = fn;
+        },
+      ).then(() => {
         if (!cancelToken.cancelled) observer.complete();
       });
 
