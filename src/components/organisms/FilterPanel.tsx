@@ -1,18 +1,18 @@
-import { Box, Stack, Button, CircularProgress } from "@mui/material";
+import { Box, Button, CircularProgress, Stack } from "@mui/material";
 import type React from "react";
-import useFilters from "../../hooks/useFilters";
-import useNotificationSlice from "../../store/slices/notificationSlice";
-import ChannelSelect, { type Channel } from "../molecules/ChannelSelect";
 import {
-  digitalLoadOptions,
   analogueLoadOptions,
+  digitalLoadOptions,
 } from "../../api/mock/MockChannelRepository";
+import useFilters from "../../hooks/useFilters";
+import useGetGraphData from "../../hooks/useGetGraphData";
+import useLoadOptions from "../../hooks/useLoadOptions";
+import useNotificationSlice from "../../store/slices/notificationSlice";
+import type { TimeseriesQueryParams } from "../../types";
+import ChannelSelect, { type Channel } from "../molecules/ChannelSelect";
 import DateRangePicker from "../molecules/DateRangePicker";
 import EquipmentSelect, { type Equipment } from "../molecules/EquipmentSelect";
 import SampleRateSlider from "../molecules/SampleRateSlider";
-import useLoadOptions from "../../hooks/useLoadOptions";
-import useGetGraphData from "../../hooks/useGetGraphData";
-import type { TimeseriesQueryParams } from "../../types";
 
 // Mock equipment and channels for the prototype
 // In production, these would come from API

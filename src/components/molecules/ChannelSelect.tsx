@@ -5,8 +5,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { SyntheticEvent } from "react";
 import type React from "react";
+import type { SyntheticEvent } from "react";
 import ColorSwatch from "../atoms/ColorSwatch";
 
 export interface Channel {

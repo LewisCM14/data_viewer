@@ -19,9 +19,7 @@ export default function useGetGraphData(options?: {
 }) {
   const [data, setData] = useState<BucketedRecording[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  // Error state kept for potential UI, but value is unused by callers.
-  // Keep setter local for future use if needed.
-  const [, setError] = useState<Error | null>(null);
+  const [_error, setError] = useState<Error | null>(null);
   const currentController = useRef<AbortController | null>(null);
   const notifier = useNotificationSlice();
 
@@ -77,12 +75,12 @@ export default function useGetGraphData(options?: {
 
         if (!hasSeries) {
           // If items don't have series, store as-is and return early
-          setData(res as BucketedRecording[]);
+          setData(res);
           setLoading(false);
-          return res as BucketedRecording[];
+          return res;
         }
 
-        const bucketed = res as BucketedRecording[];
+        const bucketed = res;
 
         const total = bucketed.reduce((acc: number, rec: BucketedRecording) => {
           const series = Array.isArray(rec.series) ? rec.series : [];

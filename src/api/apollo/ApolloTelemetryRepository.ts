@@ -1,11 +1,11 @@
+import { gql } from "@apollo/client";
 import type {
   BucketedRecording,
+  FilterOptions,
   TelemetryRepository,
   TimeseriesQueryParams,
-  FilterOptions,
 } from "../../types";
 import { createApolloClient } from "./client";
-import { gql } from "@apollo/client";
 
 /**
  * ApolloTelemetryRepository

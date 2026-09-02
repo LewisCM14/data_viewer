@@ -7,11 +7,11 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import MockTelemetryRepository from "../../api/mock/MockTelemetryRepository";
 import type useFilterSlice from "../../store/slices/filterSlice";
 import type { FilterState } from "../../store/slices/filterSlice";
 import type useNotificationSlice from "../../store/slices/notificationSlice";
 import FilterPanel from "./FilterPanel";
-import MockTelemetryRepository from "../../api/mock/MockTelemetryRepository";
 
 // Mock the filter and notification slices
 let mockFilterState: ReturnType<typeof useFilterSlice>;

@@ -51,6 +51,32 @@ describe("useFilterStore actions", () => {
     expect(useFilterStore.getState().analogueChannels).not.toContain("a3");
   });
 
+  it("prevents adding analogue channel when at MAX_CHANNELS with new channel", () => {
+    // Populate with exactly 8 channels
+    useFilterStore.setState({
+      digitalChannels: ["d1", "d2", "d3", "d4"],
+      analogueChannels: ["a1", "a2", "a3", "a4"],
+    });
+    // Try to toggle a new analogue channel (not in the list)
+    useFilterStore.getState().toggleAnalogueChannel("a5");
+    // Should not add because already at max
+    expect(useFilterStore.getState().analogueChannels).not.toContain("a5");
+    expect(useFilterStore.getState().analogueChannels).toHaveLength(4);
+  });
+
+  it("prevents adding digital channel when at MAX_CHANNELS with new channel", () => {
+    // Populate with exactly 8 channels
+    useFilterStore.setState({
+      digitalChannels: ["d1", "d2", "d3", "d4"],
+      analogueChannels: ["a1", "a2", "a3", "a4"],
+    });
+    // Try to toggle a new digital channel (not in the list)
+    useFilterStore.getState().toggleDigitalChannel("d5");
+    // Should not add because already at max
+    expect(useFilterStore.getState().digitalChannels).not.toContain("d5");
+    expect(useFilterStore.getState().digitalChannels).toHaveLength(4);
+  });
+
   it("sets dateRange, sampleRate and colours", () => {
     useFilterStore
       .getState()

@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock the client to return a non-array timeseries payload
 vi.mock("./client", () => ({

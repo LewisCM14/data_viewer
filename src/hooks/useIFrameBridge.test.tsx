@@ -1,8 +1,8 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import useIFrameBridge from "./useIFrameBridge";
-import { serializeFiltersToQuery } from "../types";
 import { useFilterStore } from "../store/useFilterStore";
+import { serializeFiltersToQuery } from "../types";
+import useIFrameBridge from "./useIFrameBridge";
 
 describe("useIFrameBridge", () => {
   beforeEach(() => {

@@ -73,18 +73,22 @@ export function parseFiltersFromQuery(
   if (colours) {
     try {
       channelColours = JSON.parse(decodeURIComponent(colours));
-    } catch (_e) {
-      channelColours = undefined;
+    } catch (error) {
+      console.warn("Invalid colours parameter in query string:", error);
     }
   }
 
+  let equipmentIdValue: number | null | undefined;
+  if (equipmentId == null) {
+    equipmentIdValue = undefined;
+  } else if (equipmentId === "null") {
+    equipmentIdValue = null;
+  } else {
+    equipmentIdValue = Number(equipmentId);
+  }
+
   return {
-    equipmentId:
-      equipmentId != null
-        ? equipmentId === "null"
-          ? null
-          : Number(equipmentId)
-        : undefined,
+    equipmentId: equipmentIdValue,
     digitalChannels: digital ? digital.split(",").filter(Boolean) : undefined,
     analogueChannels: analogue
       ? analogue.split(",").filter(Boolean)

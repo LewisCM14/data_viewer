@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { parseFiltersFromQuery, type FilterSnapshot } from "../types";
 import { useFilterStore } from "../store/useFilterStore";
+import { type FilterSnapshot, parseFiltersFromQuery } from "../types";
 
 export function useIFrameBridge() {
   const replaceFilters = useFilterStore((s) => s.replaceFilters);
@@ -23,23 +23,21 @@ export function useIFrameBridge() {
           if (snapshot) {
             replaceFilters(snapshot);
             // acknowledge
-            try {
-              // Attempt to call `postMessage` on the message source if present.
-              type PostMessageTarget = {
-                postMessage?: (message: unknown, origin?: string) => void;
-              } | null;
-              const target = ev.source as unknown as PostMessageTarget;
-              target?.postMessage?.(
-                { type: "FILTERS_APPLIED" },
-                ev.origin || "*",
-              );
-            } catch (_error_) {
-              // ignore postMessage errors
-            }
+            type PostMessageTarget = {
+              postMessage?: (message: unknown, origin?: string) => void;
+            } | null;
+            const target = ev.source as unknown as PostMessageTarget;
+            target?.postMessage?.(
+              { type: "FILTERS_APPLIED" },
+              ev.origin || "*",
+            );
           }
         }
-      } catch (_error_) {
-        // swallow bad messages
+      } catch (error) {
+        // Log message parsing errors in development
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error processing message event:", error);
+        }
       }
     }
 

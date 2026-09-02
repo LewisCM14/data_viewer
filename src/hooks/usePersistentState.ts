@@ -1,14 +1,14 @@
 import { useEffect } from "react";
-import { parseFiltersFromQuery, serializeFiltersToQuery } from "../types";
-import { useFilterStore, type FilterState } from "../store/useFilterStore";
 import {
-  serialiseFiltersToSearch,
   hydrateFiltersFromSearch,
+  serialiseFiltersToSearch,
 } from "../store/middleware/urlSyncMiddleware";
 import {
-  getLastFilterSlice,
   createFilterSliceInstance,
+  getLastFilterSlice,
 } from "../store/slices/filterSlice";
+import { type FilterState, useFilterStore } from "../store/useFilterStore";
+import { parseFiltersFromQuery, serializeFiltersToQuery } from "../types";
 
 /**
  * Named hook: hydrates filter store from the current URL on mount and keeps
@@ -31,8 +31,8 @@ export function usePersistentState() {
           Object.keys(snapshot.channelColours).length > 0);
 
       if (hasAny) replaceFilters(snapshot);
-    } catch (_error_) {
-      // ignore
+    } catch (error) {
+      console.warn("Failed to restore filters from URL search params:", error);
     }
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -41,7 +41,7 @@ export function usePersistentState() {
       timeout = setTimeout(() => {
         try {
           const q = serializeFiltersToQuery({
-            equipmentId: s.equipmentId,
+            equipmentId: s.equipmentId ? Number(s.equipmentId) : null,
             digitalChannels: s.digitalChannels,
             analogueChannels: s.analogueChannels,
             dateRange: s.dateRange,
@@ -52,8 +52,8 @@ export function usePersistentState() {
             ? `${globalThis.location.pathname}?${q}`
             : globalThis.location.pathname;
           globalThis.history.replaceState({}, "", url);
-        } catch (_error_) {
-          // ignore
+        } catch (error) {
+          console.warn("Failed to sync filters to URL search params:", error);
         }
       }, 200);
     });
@@ -62,8 +62,11 @@ export function usePersistentState() {
       try {
         const snapshot = parseFiltersFromQuery(globalThis.location.search);
         replaceFilters(snapshot);
-      } catch (_error_) {
-        // ignore
+      } catch (error) {
+        console.warn(
+          "Failed to restore filters on browser back/forward:",
+          error,
+        );
       }
     };
     globalThis.addEventListener("popstate", onPop);

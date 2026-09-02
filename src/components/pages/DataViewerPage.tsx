@@ -1,9 +1,9 @@
 import type React from "react";
+import useIFrameBridge from "../../hooks/useIFrameBridge";
 import AppThemeProvider from "../../theme/AppThemeProvider";
 import FilterPanel from "../organisms/FilterPanel";
 import GraphCanvas from "../organisms/GraphCanvas";
 import PageLayout from "../templates/PageLayout";
-import useIFrameBridge from "../../hooks/useIFrameBridge";
 
 /**
  * DataViewerPage

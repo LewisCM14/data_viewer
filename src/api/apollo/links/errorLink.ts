@@ -1,5 +1,5 @@
 import { ApolloLink, Observable } from "@apollo/client";
-import type { GraphQLError, FormattedExecutionResult } from "graphql";
+import type { FormattedExecutionResult, GraphQLError } from "graphql";
 import useNotificationSlice from "../../../store/slices/notificationSlice";
 
 /**

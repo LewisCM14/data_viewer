@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
-  digitalLoadOptions,
   analogueLoadOptions,
+  digitalLoadOptions,
 } from "./MockChannelRepository";
 
 describe("MockChannelRepository pagination", () => {

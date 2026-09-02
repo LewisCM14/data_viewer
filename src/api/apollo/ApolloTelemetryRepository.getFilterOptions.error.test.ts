@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 // Simulate client.query throwing so the repository catches and returns defaults
 vi.mock("./client", () => ({

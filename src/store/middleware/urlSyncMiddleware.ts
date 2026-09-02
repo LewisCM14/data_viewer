@@ -6,24 +6,41 @@
  * middleware will listen to store changes and call `history.replaceState`.
  */
 
+/**
+ * Create a JSON replacer that handles circular references.
+ * Circular references are replaced with a "[Circular]" marker.
+ */
+function createCircularRefReplacer() {
+  const seen = new WeakSet();
+
+  return (_key: string, value: unknown): unknown => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return "[Circular]";
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+}
+
 export function serialiseFiltersToSearch(params: Record<string, unknown>) {
   const sp = new URLSearchParams();
   Object.keys(params).forEach((k) => {
     const v = params[k];
     if (v == null) return;
-    if (Array.isArray(v)) {
+    if (typeof v === "object") {
+      // Handle all objects uniformly (arrays, objects, etc.)
       try {
-        sp.set(k, JSON.stringify(v));
+        sp.set(k, JSON.stringify(v, createCircularRefReplacer()));
       } catch {
-        sp.set(k, (v as unknown[]).join(","));
-      }
-    } else if (typeof v === "object") {
-      try {
-        sp.set(k, JSON.stringify(v));
-      } catch {
-        // Fallback: object couldn't be JSON.stringified (circular refs),
-        // use explicit String conversion as a last resort.
-        sp.set(k, String(v));
+        // If JSON.stringify fails, try array fallback before skipping
+        if (Array.isArray(v)) {
+          sp.set(k, (v as unknown[]).join(","));
+        } else {
+          // Skip non-serializable objects to avoid "[object Object]"
+          return;
+        }
       }
     } else {
       sp.set(k, String(v));

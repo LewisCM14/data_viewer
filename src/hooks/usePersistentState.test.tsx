@@ -1,7 +1,7 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { type FilterState, useFilterStore } from "../store/useFilterStore";
 import { usePersistentState } from "./usePersistentState";
-import { useFilterStore, type FilterState } from "../store/useFilterStore";
-import { beforeEach, describe, it, expect, vi } from "vitest";
 
 describe("usePersistentState", () => {
   beforeEach(() => {

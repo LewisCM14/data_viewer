@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FilterSnapshot, DateRange } from "../types";
+import type { DateRange, FilterSnapshot } from "../types";
 
 export type FilterState = {
   equipmentId: string | null;
