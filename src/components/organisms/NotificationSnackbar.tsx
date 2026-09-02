@@ -13,13 +13,7 @@ export const NotificationSnackbar: React.FC = () => {
   const notification = useNotificationSlice();
   const state = notification.getState();
 
-  const handleClose = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
+  const handleClose = (_event?: React.SyntheticEvent | Event) => {
     notification.dismissNotification();
   };
 
@@ -29,6 +23,8 @@ export const NotificationSnackbar: React.FC = () => {
       autoHideDuration={6000}
       onClose={handleClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      // Prevent accidental dismiss when clicking outside the notification
+      ClickAwayListenerProps={{ mouseEvent: false }}
     >
       <Alert
         onClose={handleClose}

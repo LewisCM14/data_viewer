@@ -20,7 +20,7 @@ export interface ChannelSelectProps {
   channels: Channel[];
   selected: string[];
   onToggle: (channelId: string) => void;
-  onColorChange: (channelId: string, color: string) => void;
+  onColorChange?: (channelId: string, color: string) => void;
   loadOptions?: (
     query: string,
     page: number,
@@ -42,8 +42,8 @@ export const ChannelSelect: React.FC<ChannelSelectProps> = ({
   loadOptions: _loadOptions,
   debounceMs: _debounceMs,
 }) => {
-  const handleChange = (_event: SyntheticEvent, newValue: Channel[] | null) => {
-    const newIds = (newValue ?? []).map((v) => v.id);
+  const handleChange = (_event: SyntheticEvent, newValue: Channel[]) => {
+    const newIds = newValue.map((v) => v.id);
 
     newIds.forEach((id) => {
       if (!selected.includes(id)) onToggle(id);

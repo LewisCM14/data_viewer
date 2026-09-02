@@ -34,10 +34,7 @@ export function useIFrameBridge() {
           }
         }
       } catch (error) {
-        // Log message parsing errors in development
-        if (process.env.NODE_ENV === "development") {
-          console.error("Error processing message event:", error);
-        }
+        console.error("Error processing message event:", error);
       }
     }
 

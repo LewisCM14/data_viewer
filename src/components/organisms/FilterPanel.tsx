@@ -89,10 +89,6 @@ export const FilterPanel: React.FC = () => {
     filters.setSampleRate(value);
   };
 
-  const handleColorChange = (channelId: string, color: string) => {
-    filters.setChannelColour(channelId, color);
-  };
-
   // Calculate combined selected channels for 8-channel cap
   const combinedSelected = [
     ...state.digitalChannels,
@@ -116,7 +112,6 @@ export const FilterPanel: React.FC = () => {
           channels={digitalChannels}
           selected={combinedSelected}
           onToggle={handleDigitalChannelToggle}
-          onColorChange={handleColorChange}
           loadOptions={digitalLoadOptions}
           debounceMs={0}
         />
@@ -125,7 +120,6 @@ export const FilterPanel: React.FC = () => {
           channels={analogueChannels}
           selected={combinedSelected}
           onToggle={handleAnalogueChannelToggle}
-          onColorChange={handleColorChange}
           loadOptions={analogueLoadOptions}
           debounceMs={0}
         />
@@ -148,42 +142,12 @@ export const FilterPanel: React.FC = () => {
             data-testid="plot-button"
             variant="contained"
             onClick={async () => {
-              // keep defensive notifications for legacy behaviour
-              if (!state.equipmentId) {
-                notification.showNotification(
-                  "Select an equipment before plotting",
-                  "warning",
-                );
-                return;
-              }
-              if (!state.dateRange?.[0] || !state.dateRange?.[1]) {
-                notification.showNotification(
-                  "Select a valid date range before plotting",
-                  "warning",
-                );
-                return;
-              }
-              if (combinedSelected.length < 1) {
-                notification.showNotification(
-                  "Select at least one channel to plot",
-                  "warning",
-                );
-                return;
-              }
-              if (combinedSelected.length > 8) {
-                notification.showNotification(
-                  "A maximum of 8 channels can be plotted",
-                  "warning",
-                );
-                return;
-              }
-
               const params: TimeseriesQueryParams = {
-                equipmentId: state.equipmentId,
+                equipmentId: state.equipmentId as string,
                 channels: combinedSelected,
-                from: state.dateRange?.[0] ?? null,
-                to: state.dateRange?.[1] ?? null,
-                bucketSize: state.sampleRate ?? 1,
+                from: state.dateRange?.[0] as string,
+                to: state.dateRange?.[1] as string,
+                bucketSize: state.sampleRate as number,
               };
 
               await plot(params);

@@ -1,23 +1,19 @@
 import type { TelemetryRepository } from "../types";
+import ApolloTelemetryRepository from "./apollo/ApolloTelemetryRepository";
 import MockTelemetryRepository from "./mock/MockTelemetryRepository";
 
-// Lazily import Apollo adapter. Use Apollo by default in production builds
-// (import.meta.env.PROD) to avoid requiring an explicit env var in deploys.
-
-const metaEnv =
-  (import.meta as unknown as { env?: Record<string, unknown> }).env ?? {};
-const USE_APOLLO = Boolean(metaEnv.PROD);
+// Use Apollo in production builds; Mock everywhere else.
+const metaEnv = (import.meta as unknown as { env: Record<string, unknown> })
+  .env;
 
 let apolloInstance: TelemetryRepository | null = null;
 
-export function getRepository(): TelemetryRepository {
-  if (USE_APOLLO) {
+/** @param useApollo - override for testing; defaults to import.meta.env.PROD */
+export function getRepository(
+  useApollo = Boolean(metaEnv.PROD),
+): TelemetryRepository {
+  if (useApollo) {
     if (!apolloInstance) {
-      // lazily require to avoid import-time side-effects in tests
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const {
-        default: ApolloTelemetryRepository,
-      } = require("./apollo/ApolloTelemetryRepository");
       apolloInstance = new ApolloTelemetryRepository();
     }
     return apolloInstance as TelemetryRepository;

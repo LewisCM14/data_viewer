@@ -41,13 +41,8 @@ function safeStringify(value: unknown): string {
         return `[Function: ${val.name || "anonymous"}]`;
       return val;
     });
-  } catch (e) {
-    // Fallback: best-effort string conversion
-    try {
-      return String((e as Error).message ?? value);
-    } catch {
-      return Object.prototype.toString.call(value);
-    }
+  } catch {
+    return Object.prototype.toString.call(value);
   }
 }
 

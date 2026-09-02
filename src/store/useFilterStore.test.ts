@@ -105,4 +105,33 @@ describe("useFilterStore actions", () => {
     useFilterStore.getState().resetFilters();
     expect(useFilterStore.getState().digitalChannels).toEqual([]);
   });
+
+  it("toggleDigitalChannel removes an existing channel", () => {
+    useFilterStore.setState({ digitalChannels: ["d1", "d2"] });
+    useFilterStore.getState().toggleDigitalChannel("d1");
+    expect(useFilterStore.getState().digitalChannels).not.toContain("d1");
+    expect(useFilterStore.getState().digitalChannels).toContain("d2");
+  });
+
+  it("toggleDigitalChannel adds a new channel when below cap", () => {
+    useFilterStore.setState({ digitalChannels: [], analogueChannels: [] });
+    useFilterStore.getState().toggleDigitalChannel("d1");
+    expect(useFilterStore.getState().digitalChannels).toContain("d1");
+  });
+
+  it("addAnalogueChannel is idempotent (no-op when already present)", () => {
+    useFilterStore.setState({ analogueChannels: ["a1"] });
+    useFilterStore.getState().addAnalogueChannel("a1");
+    expect(useFilterStore.getState().analogueChannels).toEqual(["a1"]);
+  });
+
+  it("replaceFilters handles partial snapshot with undefined fields", () => {
+    useFilterStore.getState().replaceFilters({});
+    const s = useFilterStore.getState();
+    expect(s.equipmentId).toBeNull();
+    expect(s.digitalChannels).toEqual([]);
+    expect(s.analogueChannels).toEqual([]);
+    expect(s.dateRange).toBeNull();
+    expect(s.channelColours).toEqual({});
+  });
 });

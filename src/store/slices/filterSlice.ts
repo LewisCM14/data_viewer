@@ -68,25 +68,16 @@ function makeSlice(): SliceAPI {
 
   const useSlice = create<
     FilterState & {
-      setState: (p: Partial<FilterState>) => void;
-      setEquipment: (id: string | null) => void;
       addDigitalChannel: (id: string) => void;
       removeDigitalChannel: (id: string) => void;
       addAnalogueChannel: (id: string) => void;
       removeAnalogueChannel: (id: string) => void;
-      setDateRange: (r: [string, string] | null) => void;
-      setSampleRate: (n?: number) => void;
       setChannelColour: (id: string, c: string) => void;
       resetFilters: () => void;
     }
   >((set) => ({
     ...initialFilterState,
 
-    setState: (p: Partial<FilterState>) =>
-      set((s) => ({ ...s, ...p }) as FilterState),
-
-    setEquipment: (id: string | null) =>
-      set(() => ({ equipmentId: id }) as FilterState),
     addDigitalChannel: (id: string) =>
       set((s: FilterState) => addChannelToState("digitalChannels", id, s)),
     removeDigitalChannel: (id: string) =>
@@ -98,11 +89,6 @@ function makeSlice(): SliceAPI {
         removeChannelFromState("analogueChannels", id, s),
       ),
 
-    setDateRange: (r: [string, string] | null) =>
-      set(() => ({ dateRange: r }) as FilterState),
-
-    setSampleRate: (n?: number) =>
-      set(() => ({ sampleRate: n }) as FilterState),
     setChannelColour: (id: string, c: string) =>
       set((s) => ({
         channelColours: { ...s.channelColours, [id]: c },

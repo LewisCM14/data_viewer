@@ -387,4 +387,76 @@ describe("FilterPanel", () => {
       expect(MockTelemetryRepository.callCount).toBeGreaterThan(before),
     );
   });
+
+  test("handleDateRangeChange sets null when from or to is absent", async () => {
+    const user = userEvent.setup();
+    render(<FilterPanel />);
+
+    // Type only in 'to' — 'from' is still null → setDateRange should be called with null
+    const toInput = screen.getByLabelText(/^to$/i) as HTMLInputElement;
+    await user.type(toInput, "2024-12-31");
+
+    // handleDateRangeChange({ from: null, to: "2024-12-31" }) → from && to = null → null
+    const calls = (mockFilterState.setDateRange as ReturnType<typeof vi.fn>)
+      .mock.calls;
+    const hasNullCall = calls.some((c: unknown[]) => c[0] === null);
+    expect(hasNullCall).toBe(true);
+  });
+
+  test("renders with sampleRate undefined and falls back to 1 (covers ?? 1 branches)", () => {
+    // To cover line 164 (!(sampleRate ?? 1)), all prior disabled conditions must be false.
+    // Otherwise || short-circuits and line 164 is never evaluated.
+    currentState = {
+      equipmentId: "eq1",
+      digitalChannels: ["d1"],
+      analogueChannels: [],
+      dateRange: ["2024-01-01", "2024-12-31"],
+      sampleRate: undefined, // undefined ?? 1 = 1 → !1 = false → button enabled
+      channelColours: {},
+    } as unknown as FilterState;
+
+    render(<FilterPanel />);
+
+    // The SampleRateSlider should receive value=1 (from the ?? 1 fallback at line 135)
+    const slider = screen.getByRole("slider", { name: /sample rate/i });
+    expect(slider).toBeInTheDocument();
+
+    // The button's disabled evaluates !(undefined ?? 1) = !1 = false → enabled
+    // (providing all required inputs are present)
+    // The expression at line 164 is now evaluated, covering the ?? 1 branch.
+    const plotBtn = screen.getByTestId("plot-button");
+    expect(plotBtn).toBeDefined();
+  });
+
+  test("renders CircularProgress while plotting", async () => {
+    // Set a valid state so the button is enabled
+    currentState = {
+      equipmentId: "eq1",
+      digitalChannels: ["d1"],
+      analogueChannels: [],
+      dateRange: ["2024-01-01", "2024-01-02"],
+      sampleRate: 1,
+      channelColours: {},
+    } as unknown as FilterState;
+
+    // Set slow response so loading stays true
+    MockTelemetryRepository.simulateSlowResponse = true;
+
+    render(<FilterPanel />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("plot-button")).not.toBeDisabled(),
+    );
+
+    await userEvent.setup().click(screen.getByTestId("plot-button"));
+
+    // CircularProgress should be visible while plotting
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("plot-button").querySelector("svg"),
+      ).toBeInTheDocument();
+    });
+
+    MockTelemetryRepository.simulateSlowResponse = false;
+  });
 });

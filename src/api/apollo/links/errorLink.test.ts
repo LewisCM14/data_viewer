@@ -631,4 +631,31 @@ describe("errorLink", () => {
       expect(completed).toBe(true);
     });
   });
+
+  describe("safeStringify anonymous function branch", () => {
+    test("handles object with anonymous function (no .name) in network errors", async () => {
+      const link = errorLink();
+      // Create a function with an empty name by using Object.defineProperty
+      const anonFn = Object.defineProperty(() => {}, "name", { value: "" });
+      const objWithAnonFunc = { fn: anonFn };
+      const forward = () =>
+        new Observable((observer) => {
+          observer.error(objWithAnonFunc);
+        });
+
+      const op = { setContext: () => {}, getContext: () => ({}) };
+
+      await expect(
+        new Promise((resolve, reject) => {
+          // biome-ignore lint/suspicious/noExplicitAny: testing Apollo Link
+          const obs = link.request(op as any, forward as any);
+          obs?.subscribe({ next: resolve, error: reject });
+        }),
+      ).rejects.toBeTruthy();
+
+      expect(mockShow).toHaveBeenCalled();
+      const callArgs = mockShow.mock.calls[0];
+      expect(callArgs[0]).toContain("[Function: anonymous]");
+    });
+  });
 });

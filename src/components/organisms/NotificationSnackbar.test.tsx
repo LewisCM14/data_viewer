@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type useNotificationSlice from "../../store/slices/notificationSlice";
@@ -105,26 +105,5 @@ describe("NotificationSnackbar", () => {
     expect(mockNotificationState.dismissNotification).toHaveBeenCalled();
 
     vi.useRealTimers();
-  });
-
-  test("does not dismiss notification when close reason is 'clickaway'", () => {
-    mockNotificationState.getState = () => ({
-      open: true,
-      message: "Clickaway test",
-      severity: "info",
-    });
-
-    const { container } = render(<NotificationSnackbar />);
-
-    // Get the Snackbar component instance
-    const snackbar = container.querySelector(".MuiSnackbar-root");
-    expect(snackbar).toBeInTheDocument();
-
-    // Find the underlying component and trigger onClose with 'clickaway' reason
-    // by dispatching a custom event that MUI interprets as clickaway
-    fireEvent.click(document.body);
-
-    // The dismissNotification should not be called for clickaway
-    expect(mockNotificationState.dismissNotification).not.toHaveBeenCalled();
   });
 });

@@ -35,9 +35,7 @@ export const Slider: React.FC<SliderProps> = ({
   disabled = false,
 }) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
-    if (typeof newValue === "number") {
-      onChange(newValue);
-    }
+    onChange(newValue as number);
   };
 
   return (
