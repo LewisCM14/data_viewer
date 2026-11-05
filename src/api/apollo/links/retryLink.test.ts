@@ -1,35 +1,45 @@
 import { Observable } from "@apollo/client";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { retryLink } from "./retryLink";
 
 describe("retryLink", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   test("retries once and resolves", async () => {
-    const link = retryLink({ maxAttempts: 2, baseDelay: 0 });
+    vi.useFakeTimers();
     let calls = 0;
+    const response = { data: { node: "ok" } };
     const forward = () =>
       new Observable((observer) => {
         calls += 1;
         if (calls === 1) {
           observer.error(new Error("boom"));
         } else {
-          observer.next("ok");
+          // biome-ignore lint/suspicious/noExplicitAny: mock graphql response shape
+          observer.next(response as any);
           observer.complete();
         }
       });
 
     // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
-    const result = await new Promise((resolve, reject) => {
-      // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-      const obs = link.request(op, forward as any);
-      obs?.subscribe({ next: resolve, error: reject });
+    let result: unknown;
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
+    retryLink.request(op, forward as any)?.subscribe({
+      next: (v) => {
+        result = v;
+      },
+      error: () => {},
     });
 
-    expect(result).toBe("ok");
+    await vi.runAllTimersAsync();
+    expect(result).toEqual(response);
   });
 
   test("errors after max attempts", async () => {
-    const link = retryLink({ maxAttempts: 1, baseDelay: 0 });
+    vi.useFakeTimers();
     const forward = () =>
       new Observable((observer) => {
         observer.error(new Error("boom"));
@@ -37,132 +47,60 @@ describe("retryLink", () => {
 
     // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
-    await expect(
-      new Promise((resolve, reject) => {
-        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-        const obs = link.request(op, forward as any);
-        obs?.subscribe({ next: resolve, error: reject });
-      }),
-    ).rejects.toThrow("boom");
-  });
-
-  test("handles synchronous throw during retry's forwarded subscribe", async () => {
-    const link = retryLink({ maxAttempts: 2, baseDelay: 0 });
-    let calls = 0;
-    const forward = () => ({
-      // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link observer for retry testing
-      subscribe: (observer: any) => {
-        calls += 1;
-        if (calls === 1) {
-          observer.error(new Error("boom"));
-          return { unsubscribe: () => {} };
-        }
-        // second attempt throws synchronously from subscribe
-        throw new Error("sync throw");
-      },
-    });
-
-    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
-    const op = { setContext: () => {}, getContext: () => ({}) } as any;
-    await expect(
-      new Promise((resolve, reject) => {
-        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-        const obs = link.request(op, forward as any);
-        obs?.subscribe({ next: resolve, error: reject });
-      }),
-    ).rejects.toThrow("sync throw");
-  });
-
-  test("unsubscribes during retry with activeUnsub set", async () => {
-    const link = retryLink({ maxAttempts: 100, baseDelay: 10 });
-    let unsubCalls = 0;
-    const forward = () =>
-      new Observable((observer) => {
-        // Fail immediately to trigger retries
-        observer.error(new Error("always fails"));
-        return () => {
-          unsubCalls += 1;
-        };
-      });
-
-    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
-    const op = { setContext: () => {}, getContext: () => ({}) } as any;
+    let capturedError: unknown;
     // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-    const obs = link.request(op, forward as any);
-    const sub = obs?.subscribe({
+    retryLink.request(op, forward as any)?.subscribe({
       next: () => {},
-      error: () => {},
+      error: (e) => {
+        capturedError = e;
+      },
     });
 
-    // Unsubscribe after retry attempts have started (activeUnsub is set)
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    sub?.unsubscribe();
-
-    // Verify the subscription cleanup was called
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(unsubCalls).toBeGreaterThan(0);
+    await vi.runAllTimersAsync();
+    expect(capturedError).toBeInstanceOf(Error);
+    expect((capturedError as Error).message).toBe("boom");
   });
 
-  test("cancellation during retry delay (between attempts)", async () => {
-    const link = retryLink({ maxAttempts: 10, baseDelay: 30 });
-    let cleanups = 0;
-    const forward = () =>
-      new Observable((observer) => {
-        // Fail to trigger retry
-        observer.error(new Error("fail"));
-        return () => {
-          cleanups += 1;
-        };
-      });
-
-    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
-    const op = { setContext: () => {}, getContext: () => ({}) } as any;
-    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-    const obs = link.request(op, forward as any);
-    const sub = obs?.subscribe({ next: () => {}, error: () => {} });
-
-    // Let first attempt complete, then unsubscribe during retry delay
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    sub?.unsubscribe();
-
-    // Let any pending cleanup finish
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(cleanups).toBeGreaterThan(0);
-  });
-
-  test("successful completion does not call complete if cancelled", async () => {
-    const link = retryLink({ maxAttempts: 2, baseDelay: 0 });
+  test("does not retry on AbortError", async () => {
     let calls = 0;
-    let observerCompleteCalled = false;
     const forward = () =>
       new Observable((observer) => {
         calls += 1;
-        if (calls === 1) {
-          observer.error(new Error("fail once"));
-        } else {
-          observer.next("success");
-          observer.complete();
-        }
+        const err = new Error("aborted");
+        err.name = "AbortError";
+        observer.error(err);
       });
 
     // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation for retry testing
     const op = { setContext: () => {}, getContext: () => ({}) } as any;
-    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
-    const obs = link.request(op, forward as any);
-    const sub = obs?.subscribe({
-      next: () => {
-        sub?.unsubscribe(); // Unsubscribe immediately after first value
-      },
-      error: () => {
-        sub?.unsubscribe();
-      },
-      complete: () => {
-        observerCompleteCalled = true;
-      },
-    });
+    await expect(
+      new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
+        retryLink.request(op, forward as any)?.subscribe({ next: resolve, error: reject });
+      }),
+    ).rejects.toThrow("aborted");
+    expect(calls).toBe(1);
+  });
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    // Observer.complete should not have been called because we unsubscribed
-    expect(observerCompleteCalled).toBe(false);
+  test("does not retry when userSignal is aborted", async () => {
+    let calls = 0;
+    const forward = () =>
+      new Observable((observer) => {
+        calls += 1;
+        observer.error(new Error("network error"));
+      });
+
+    // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link operation with aborted signal
+    const op = {
+      setContext: () => {},
+      getContext: () => ({ userSignal: { aborted: true } }),
+    } as any;
+    await expect(
+      new Promise((resolve, reject) => {
+        // biome-ignore lint/suspicious/noExplicitAny: mocking Apollo Link forward function
+        retryLink.request(op, forward as any)?.subscribe({ next: resolve, error: reject });
+      }),
+    ).rejects.toThrow("network error");
+    expect(calls).toBe(1);
   });
 });

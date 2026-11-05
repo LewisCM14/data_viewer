@@ -11,7 +11,7 @@ import { timeoutLink } from "./links/timeoutLink";
 export function createApolloClient(uri = "http://localhost:4000/graphql") {
   const httpLink = new HttpLink({ uri });
   const link = ApolloLink.from([
-    retryLink(),
+    retryLink,
     timeoutLink(),
     errorLink(),
     httpLink,
